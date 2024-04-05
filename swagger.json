@@ -1,0 +1,4519 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "v2",
+    "title": "Lottery API",
+    "description": "# Introduction 简介 \n\nThis document targets technical developers of merchant systems, who should have a background in web programming, understanding of RESTful API, and familiarity with HTTP, HTTPS request and response formats and processes, as well as JSON format.\n\n本文档适用于商户系统的技术开发人员，要求具有WEB 程序开发背景，了解RESTful API, HTTP、HTTPS 请求和应答的格式和过程，对JSON 格式有所掌握。 \n\n# Authentication 认证 \n\nThis API uses Bearer Token for authentication. Please make sure to include the bearer token in the `Authorization` header for all requests.\n\n## Obtaining Bearer Token\n\nTo obtain the bearer token, you need to follow these steps:\n\n1. Go to our **ClientLogin** method. 通过 **ClientLogin** 登陆\n2. Sign in with your credentials using our MD5 method as follows. 登陆方式如下，签名，验签时用到的key 值均为商户密钥 \n\n```\n// 如登录接口：C#语法 \nstring key=”3fg49gh7ye5yfjwhw67efj”;//密钥 secretKey provided by us\n\n// Employing a descending secretKey.\n// 我们将采用降序的secretKey\nstring descKey = new string (key.ToLower().OrderByDescending(c => c).ToArray()); \n\n// Parameters of the query except “Sign” should pass in ascending order, example as below \n// 除了“Sign”参数之外，查询的参数应按升序传递，示例如下：\n// E.g. [I]jk[L][M]\nstring sign = MD5(“isMobile=0&loginId=cs003&merchantId=test&key=”+ descKey);//签名 sign\n\n```\n\n\n3. Upon successful authentication, you will receive the bearer token.\n\n## Using Bearer Token\n\nOnce you have obtained the bearer token, include it in the `Authorization` header of your requests as follows:\n\n```\nAuthorization: Bearer <your-access-token>\n```\n\n"
+  },
+  "paths": {
+    "/api/BettingList/UnSettle": {
+      "get": {
+        "tags": ["BettingList"],
+        "summary": "未结注单 Unsettled bets",
+        "description": "未结注单, 获取未结算注单列表 \r\n Unsettled bets, get a list of unsettled bets.",
+        "operationId": "UnSettle",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "index",
+            "in": "query",
+            "description": "page \r\n 页数",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "row",
+            "in": "query",
+            "description": "row \r\n 行数",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "uniqueItems": false,
+              "type": "array",
+              "items": { "$ref": "#/definitions/Models.BettingList.BetListRes" }
+            }
+          },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/BettingList/Settled": {
+      "get": {
+        "tags": ["BettingList"],
+        "summary": "已结注单 Settled bets",
+        "description": "已结注单, 获取已结注单列表 \r\n Settled bets, get a list of settled bets.",
+        "operationId": "Settled",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "index",
+            "in": "query",
+            "description": "Index to start at",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "row",
+            "in": "query",
+            "description": "Number of Rows",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "uniqueItems": false,
+              "type": "array",
+              "items": { "$ref": "#/definitions/Models.BettingList.BetListRes" }
+            }
+          },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/BettingList/History": {
+      "get": {
+        "tags": ["BettingList"],
+        "summary": "报表查询 Report query",
+        "description": "会员报表查询, 会员日报表统计 \r\n Member report query, daily member report statistics.",
+        "operationId": "History",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "**yyyy-MM-dd** \r\n For 2024 March, 08, E.g.: 2024-03-08",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "**yyyy-MM-dd** \r\n For 2024 March, 08, E.g.: 2024-03-08",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "lotteryType",
+            "in": "query",
+            "description": "Lottery Type, 彩种 \r\n Leave blank for all. 放空则获取全部.",
+            "required": false,
+            "type": "string",
+            "default": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "uniqueItems": false,
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Models.BettingList.BetHistoryRes"
+              }
+            }
+          },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/BettingList/BetDetail/{dDate}": {
+      "get": {
+        "tags": ["BettingList"],
+        "summary": "报表明细 Bet detail",
+        "description": "会员日报表明细 (BetDetailJson)  \r\n Request E.g. betDetail/2024-03-08?index=1&row=15&lotteryType=",
+        "operationId": "BetDetail",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [
+          {
+            "name": "dDate",
+            "in": "path",
+            "description": "**yyyy-MM-dd** \r\n For 2024 March, 08, E.g.: 2024-03-08",
+            "required": true,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "index",
+            "in": "query",
+            "description": "page \r\n 页数",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "row",
+            "in": "query",
+            "description": "row \r\n 行数",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "lotteryType",
+            "in": "query",
+            "description": "Lottery Type, 彩种 \r\n Leave blank for all. 放空则获取全部.",
+            "required": false,
+            "type": "string",
+            "default": ""
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "uniqueItems": false,
+              "type": "array",
+              "items": { "$ref": "#/definitions/Models.BettingList.BetListRes" }
+            }
+          },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/BettingList/UnSettle": {
+      "get": {
+        "tags": ["BettingList"],
+        "summary": "今天未结。 获取未结算注单列表",
+        "operationId": "UnSettle",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "index",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "row",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/BettingList/Settled": {
+      "get": {
+        "tags": ["BettingList"],
+        "summary": "今天已结。 获取已经结算的注单，今天已经结算注单\r\nIncrease the index as per row value",
+        "operationId": "Settled",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "index",
+            "in": "query",
+            "description": "Index to start at",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "row",
+            "in": "query",
+            "description": "Number of Rows",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/BettingList/History": {
+      "get": {
+        "tags": ["BettingList"],
+        "summary": "报表查询",
+        "operationId": "History",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "startDate",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "endDate",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/BettingList/BetDetail/{dDate}": {
+      "get": {
+        "tags": ["BettingList"],
+        "summary": "会员报表明细",
+        "operationId": "BetDetail",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "dDate",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "type": "string",
+            "format": "date-time"
+          },
+          {
+            "name": "index",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "row",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/GetSecurityCentre": {
+      "get": {
+        "tags": ["Cash"],
+        "summary": "Get Member Cash setting page (个人中心, 帐号设置, 消息中心)",
+        "operationId": "GetSecurityCentre",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/PhoneRegisterValidCode/{phone}": {
+      "get": {
+        "tags": ["Cash"],
+        "summary": "获取验证码, Send phone validation code in Register form",
+        "operationId": "PhoneRegisterValidCode",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "phone",
+            "in": "path",
+            "description": "Phone Number",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/IsExistsLoginId/{account}": {
+      "get": {
+        "tags": ["Cash"],
+        "summary": "是否存在用户名, Check if LoginId is already exists in Register form",
+        "operationId": "IsExistsLoginId",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "account",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/SendForgotPWCode": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "获取找回密码验证码, Step 1 of Forgot Password",
+        "operationId": "SendForgotPWCode",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "forgotPW",
+            "in": "body",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Cash.ForgotPasswordDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/CheckForgotPWCode": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "Step 2 of Forgot Password, validate OTP send by SMS",
+        "operationId": "CheckForgotPWCode",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "checkPW",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Cash.ForgotPasswordDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/SetNewForgotPW": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "Step 3 of Forgot Password, Set new password",
+        "operationId": "SetNewForgotPW",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "pwDto",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Member.PasswordDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/SetWithdrawPW": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "Setting of Withdrawal password\r\nAction = Change -&gt; Change of withdraw password\r\nAction = Set -&gt; First time set withdraw password",
+        "operationId": "SetWithdrawPW",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "wPass",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Cash.WithdrawPassDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/SaveMemberInfo": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "One time binding of member's information",
+        "operationId": "SaveMemberInfo",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "bindMem",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Cash.SaveCashMemDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/SaveBankCard": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "Save bank card of cash member",
+        "operationId": "SaveBankCard",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "bankDto",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Cash.SaveBankDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/SaveMemGiftAddress": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "Save member address",
+        "operationId": "SaveMemGiftAddress",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "memDto",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Cash.SaveGiftAddressDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/BankCard/{bankID}": {
+      "get": {
+        "tags": ["Cash"],
+        "summary": "Get bank card information with Bank Card ID",
+        "operationId": "BankCard",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "bankID",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/DeleteBankCard": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "Delete bank card that is binded to the user account",
+        "operationId": "DeleteBankCard",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "bankId",
+            "in": "body",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/UsePromoCode": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "Use promotion code given by agent or company",
+        "operationId": "UsePromoCode",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "proCode",
+            "in": "body",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/AllTransfers": {
+      "get": {
+        "tags": ["Cash"],
+        "summary": "Get all cash transfers/transactions",
+        "operationId": "AllTransfers",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "actionType",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "actionStatus",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "beginTime",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "endTime",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "orderId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 1
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 10
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/SavePhoneNumber": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "Save phone number without verification code",
+        "operationId": "SavePhoneNumber",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "phone",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/SendBindPhoneCode": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "获取验证码 for binding of phone number with verification code",
+        "operationId": "SendBindPhoneCode",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "phoneNum",
+            "in": "body",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/CheckBindPhoneCode": {
+      "post": {
+        "tags": ["Cash"],
+        "operationId": "CheckBindPhoneCode",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "verifCode",
+            "in": "body",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/SendPhoneVerificationCode": {
+      "get": {
+        "tags": ["Cash"],
+        "summary": "获取验证码 - Request to remove phone",
+        "operationId": "SendPhoneVerificationCode",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/CheckPhoneRemoveCode": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "校验验证码 - Remove binded phone with verification code",
+        "operationId": "CheckPhoneRemoveCode",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "safeCode",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/UnreadMsg": {
+      "get": {
+        "tags": ["Cash"],
+        "summary": "未读消息",
+        "operationId": "UnreadMsg",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Cash/SetMsgAsRead": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "设置为已读消息",
+        "operationId": "SetMsgAsRead",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Cash/GetSecurityCentre": {
+      "get": {
+        "tags": ["Cash"],
+        "summary": "Get Member Cash setting page (个人中心, 帐号设置, 消息中心)",
+        "operationId": "GetSecurityCentre",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Cash/PhoneRegisterValidCode/{phone}": {
+      "get": {
+        "tags": ["Cash"],
+        "summary": "获取验证码, Send phone validation code in Register form",
+        "operationId": "PhoneRegisterValidCode",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "phone",
+            "in": "path",
+            "description": "Phone Number",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Cash/IsExistsLoginId/{account}": {
+      "get": {
+        "tags": ["Cash"],
+        "summary": "是否存在用户名, Check if LoginId is already exists in Register form",
+        "operationId": "IsExistsLoginId",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "account",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Cash/SendForgotPWCode": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "获取找回密码验证码, Step 1 of Forgot Password",
+        "operationId": "SendForgotPWCode",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "forgotPW",
+            "in": "body",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Cash.ForgotPasswordDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Cash/CheckForgotPWCode": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "Step 2 of Forgot Password, validate OTP send by SMS",
+        "operationId": "CheckForgotPWCode",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "checkPW",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Cash.ForgotPasswordDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Cash/SetNewForgotPW": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "Step 3 of Forgot Password, Set new password",
+        "operationId": "SetNewForgotPW",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "pwDto",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Member.PasswordDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Cash/SetWithdrawPW": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "Setting of Withdrawal password\r\nAction = Change -&gt; Change of withdraw password\r\nAction = Set -&gt; First time set withdraw password",
+        "operationId": "SetWithdrawPW",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "wPass",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Cash.WithdrawPassDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Cash/SaveMemberInfo": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "One time binding of member's information",
+        "operationId": "SaveMemberInfo",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "bindMem",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Cash.SaveCashMemDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Cash/SaveBankCard": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "Save bank card of cash member",
+        "operationId": "SaveBankCard",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "bankDto",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Cash.SaveBankDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Cash/SaveMemGiftAddress": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "Save member address",
+        "operationId": "SaveMemGiftAddress",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "memDto",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Cash.SaveGiftAddressDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Cash/BankCard/{bankID}": {
+      "get": {
+        "tags": ["Cash"],
+        "summary": "Get bank card information with Bank Card ID",
+        "operationId": "BankCard",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "bankID",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Cash/DeleteBankCard": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "Delete bank card that is binded to the user account",
+        "operationId": "DeleteBankCard",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "bankId",
+            "in": "body",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Cash/UsePromoCode": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "Use promotion code given by agent or company",
+        "operationId": "UsePromoCode",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "proCode",
+            "in": "body",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Cash/AllTransfers": {
+      "get": {
+        "tags": ["Cash"],
+        "summary": "Get all cash transfers/transactions",
+        "operationId": "AllTransfers",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "actionType",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "actionStatus",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "beginTime",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "endTime",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 1
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 10
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Cash/TransferDetail/{transferID}": {
+      "get": {
+        "tags": ["Cash"],
+        "summary": "Get transfer detail with transfer ID",
+        "operationId": "TransferDetail",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "transferID",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Cash/SavePhoneNumber": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "Save phone number without verification code",
+        "operationId": "SavePhoneNumber",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "phone",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Cash/SendBindPhoneCode": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "获取验证码 for binding of phone number with verification code",
+        "operationId": "SendBindPhoneCode",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "phoneNum",
+            "in": "body",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Cash/CheckBindPhoneCode": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "校验验证码 - Save phone with verification code",
+        "operationId": "CheckBindPhoneCode",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "verifCode",
+            "in": "body",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Cash/SendPhoneVerificationCode": {
+      "get": {
+        "tags": ["Cash"],
+        "summary": "获取验证码 - Request to remove phone",
+        "operationId": "SendPhoneVerificationCode",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Cash/CheckPhoneRemoveCode": {
+      "post": {
+        "tags": ["Cash"],
+        "summary": "校验验证码 - Remove binded phone with verification code",
+        "operationId": "CheckPhoneRemoveCode",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "safeCode",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "type": "string" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Company/GetInfo": {
+      "get": {
+        "tags": ["Company"],
+        "operationId": "GetInfo",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Company/GetInfo": {
+      "get": {
+        "tags": ["Company"],
+        "operationId": "GetInfo",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/ExtTransaction/GetInfo": {
+      "get": {
+        "tags": ["ExtTransaction"],
+        "summary": "Get all the information",
+        "operationId": "GetInfo",
+        "consumes": ["application/json"],
+        "produces": ["application/json"],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "uniqueItems": false,
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/Hb.Lhc.ViewModel.UserAccountBalanceInfo"
+              }
+            }
+          },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/ExtTransaction/GetBalance": {
+      "get": {
+        "tags": ["ExtTransaction"],
+        "summary": "充值或提款 Topup or withdraw",
+        "description": " 余额查询 \r\n Balance enquiry.",
+        "operationId": "GetBalance",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "topupDto",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Cash.ClientSaveTopUpDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/ExtTransaction/ClientSave": {
+      "post": {
+        "tags": ["ExtTransaction"],
+        "summary": "充值或提款 Topup or withdraw",
+        "description": "充值或提款 \r\n Topup or withdraw.",
+        "operationId": "ClientSave",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "topupDto",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Cash.ClientSaveTopUpDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/GameArea/GetInfo/{lotteryType}": {
+      "get": {
+        "tags": ["GameArea"],
+        "operationId": "GetInfo",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/GameArea/GameNameAndCode/{lotteryType}": {
+      "get": {
+        "tags": ["GameArea"],
+        "operationId": "GameNameAndCode",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "iType",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "installment",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "midCode",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "settingCode",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "default": ""
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/GameArea/GetInfo/{lotteryType}": {
+      "get": {
+        "tags": ["GameArea"],
+        "operationId": "GetInfo",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/GameArea/GameNameAndCode/{lotteryType}": {
+      "get": {
+        "tags": ["GameArea"],
+        "operationId": "GameNameAndCode",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "iType",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "installment",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "midCode",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "settingCode",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "default": ""
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/GameRule/GetInfo/{lotteryType}": {
+      "get": {
+        "tags": ["GameRule"],
+        "operationId": "GetInfo",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/GameRule/GetInfo/{lotteryType}": {
+      "get": {
+        "tags": ["GameRule"],
+        "operationId": "GetInfo",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Home/Init": {
+      "get": {
+        "tags": ["Home"],
+        "operationId": "Init",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          { "name": "a", "in": "query", "required": false, "type": "string" },
+          {
+            "name": "acPage",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "default": "Index"
+          },
+          {
+            "name": "templ",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "default": ""
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Home/GetInfo": {
+      "get": {
+        "tags": ["Home"],
+        "operationId": "GetInfo",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "affCode",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Home/LotteryNotice/{lotteryType}": {
+      "get": {
+        "tags": ["Home"],
+        "operationId": "LotteryNotice",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Home/Ping": {
+      "get": {
+        "tags": ["Home"],
+        "summary": "Test alive",
+        "operationId": "Ping",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Home/Init": {
+      "get": {
+        "tags": ["Home"],
+        "operationId": "Init",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          { "name": "a", "in": "query", "required": false, "type": "string" },
+          {
+            "name": "acPage",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "default": "Index"
+          },
+          {
+            "name": "templ",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "from",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "default": ""
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Home/GetInfo": {
+      "get": {
+        "tags": ["Home"],
+        "operationId": "GetInfo",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "affCode",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Home/LotteryNotice/{lotteryType}": {
+      "get": {
+        "tags": ["Home"],
+        "operationId": "LotteryNotice",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Member/test": {
+      "get": {
+        "tags": ["Member"],
+        "operationId": "test",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Member/Login": {
+      "post": {
+        "tags": ["Member"],
+        "operationId": "Login",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "logDto",
+            "in": "body",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Member.LoginDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Member/ClientLogin": {
+      "post": {
+        "tags": ["Member"],
+        "summary": "登录 login",
+        "operationId": "ClientLogin",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "logDto",
+            "in": "body",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Member.ClientLoginDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Member/Online/{loginId}": {
+      "get": {
+        "tags": ["Member"],
+        "operationId": "Online",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "loginId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Member/ClientLogout": {
+      "post": {
+        "tags": ["Member"],
+        "operationId": "ClientLogout",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Member/Logout": {
+      "post": {
+        "tags": ["Member"],
+        "operationId": "Logout",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "logDto",
+            "in": "body",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Member.LogoutDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Member/VisitorLogin": {
+      "get": {
+        "tags": ["Member"],
+        "operationId": "VisitorLogin",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Member/Captcha": {
+      "get": {
+        "tags": ["Member"],
+        "operationId": "Captcha",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Member/Register": {
+      "post": {
+        "tags": ["Member"],
+        "operationId": "Register",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "memInfo",
+            "in": "body",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Member.CreateMemberDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Member/SendRegisterPhoneSMS/{phoneNum}": {
+      "get": {
+        "tags": ["Member"],
+        "summary": "获取验证码, Send phone validation code in Register form",
+        "operationId": "SendRegisterPhoneSMS",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "phoneNum",
+            "in": "path",
+            "description": "Phone Number",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Member/BetLimit/{lotteryType}": {
+      "get": {
+        "tags": ["Member"],
+        "summary": "Get member info",
+        "operationId": "BetLimit",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "type": "string",
+            "default": "HK6"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Member/BalanceLog": {
+      "get": {
+        "tags": ["Member"],
+        "summary": "Get member account balance log",
+        "operationId": "BalanceLog",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 1
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 7
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Member/ChangePassword": {
+      "post": {
+        "tags": ["Member"],
+        "operationId": "ChangePassword",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "pwDto",
+            "in": "body",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Member.PasswordDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Member/UserMessages": {
+      "get": {
+        "tags": ["Member"],
+        "summary": "Get user messages in 历史公告",
+        "operationId": "UserMessages",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 1
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 15
+          },
+          {
+            "name": "isRead",
+            "in": "query",
+            "description": "-1, Get all messages\r\n0, Get unread messages\r\n1, Get read messages",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": -1
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Member/MessageDetail/{Id}": {
+      "get": {
+        "tags": ["Member"],
+        "summary": "View detailed user message",
+        "operationId": "MessageDetail",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "Id",
+            "in": "path",
+            "description": "MsgID",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Member/GetInfo": {
+      "get": {
+        "tags": ["Member"],
+        "summary": "Get user balance, latest announcement, auto thirdPartyGames transfer\r\n0 = Do third party transfer\r\n1 = Wont do third party transfer",
+        "operationId": "GetInfo",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "thirdPartyTransfer",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 1
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Member/Feedback": {
+      "post": {
+        "tags": ["Member"],
+        "summary": "创建反馈",
+        "operationId": "Feedback",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "feedbackDto",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Member.FeedbackDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Member/FeedbackHistory": {
+      "get": {
+        "tags": ["Member"],
+        "summary": "用户反馈历史",
+        "operationId": "FeedbackHistory",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "feedbackType",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 0
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 1
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 15
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Member/test": {
+      "get": {
+        "tags": ["Member"],
+        "operationId": "test",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Member/Login": {
+      "post": {
+        "tags": ["Member"],
+        "operationId": "Login",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "logDto",
+            "in": "body",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Member.LoginDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Member/Online/{loginId}": {
+      "get": {
+        "tags": ["Member"],
+        "operationId": "Online",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "loginId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Member/Logout": {
+      "post": {
+        "tags": ["Member"],
+        "operationId": "Logout",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "logDto",
+            "in": "body",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Member.LogoutDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Member/VisitorLogin": {
+      "get": {
+        "tags": ["Member"],
+        "operationId": "VisitorLogin",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Member/Captcha": {
+      "get": {
+        "tags": ["Member"],
+        "operationId": "Captcha",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Member/Register": {
+      "post": {
+        "tags": ["Member"],
+        "operationId": "Register",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "memInfo",
+            "in": "body",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Member.CreateMemberDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Member/SendRegisterPhoneSMS/{phoneNum}": {
+      "get": {
+        "tags": ["Member"],
+        "summary": "获取验证码, Send phone validation code in Register form",
+        "operationId": "SendRegisterPhoneSMS",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "phoneNum",
+            "in": "path",
+            "description": "Phone Number",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Member/BetLimit/{lotteryType}": {
+      "get": {
+        "tags": ["Member"],
+        "summary": "Get member info",
+        "operationId": "BetLimit",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "type": "string",
+            "default": "HK6"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Member/BalanceLog": {
+      "get": {
+        "tags": ["Member"],
+        "summary": "Get member account balance log",
+        "operationId": "BalanceLog",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 1
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 7
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Member/ChangePassword": {
+      "post": {
+        "tags": ["Member"],
+        "operationId": "ChangePassword",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "pwDto",
+            "in": "body",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Member.PasswordDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Member/UserMessages": {
+      "get": {
+        "tags": ["Member"],
+        "summary": "Get user messages in 历史公告",
+        "operationId": "UserMessages",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 1
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 15
+          },
+          {
+            "name": "isRead",
+            "in": "query",
+            "description": "-1, Get all messages\r\n0, Get unread messages\r\n1, Get read messages",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": -1
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Member/MessageDetail/{Id}": {
+      "get": {
+        "tags": ["Member"],
+        "summary": "View detailed user message",
+        "operationId": "MessageDetail",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "Id",
+            "in": "path",
+            "description": "MsgID",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Member/GetInfo": {
+      "get": {
+        "tags": ["Member"],
+        "summary": "Get user balance, latest announcement, auto thirdPartyGames transfer\r\n0 = Do third party transfer\r\n1 = Wont do third party transfer",
+        "operationId": "GetInfo",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "thirdPartyTransfer",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 1
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Member/Feedback": {
+      "post": {
+        "tags": ["Member"],
+        "summary": "创建反馈",
+        "operationId": "Feedback",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "feedbackDto",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Member.FeedbackDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Member/FeedbackHistory": {
+      "get": {
+        "tags": ["Member"],
+        "summary": "用户反馈历史",
+        "operationId": "FeedbackHistory",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "feedbackType",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 0
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 1
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 15
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Notices/GetAnnouncement": {
+      "get": {
+        "tags": ["Notices"],
+        "summary": "Get notice after login and notice history list (by providing Rows in body)",
+        "operationId": "GetAnnouncement",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 1
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 10
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Notices/LatestAnnouncement": {
+      "get": {
+        "tags": ["Notices"],
+        "operationId": "LatestAnnouncement",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Notices/GetAnnouncement": {
+      "get": {
+        "tags": ["Notices"],
+        "summary": "Get notice after login and notice history list (by providing Rows in body)",
+        "operationId": "GetAnnouncement",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 1
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 10
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Notices/LatestAnnouncement": {
+      "get": {
+        "tags": ["Notices"],
+        "operationId": "LatestAnnouncement",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Ping/CheckLatency": {
+      "get": {
+        "tags": ["Ping"],
+        "operationId": "CheckLatency",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/PlaceBet/GamesOdds/{lotteryType}": {
+      "get": {
+        "tags": ["PlaceBet"],
+        "summary": "Get game odds",
+        "operationId": "GamesOdds",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "iType",
+            "in": "query",
+            "description": "-1, 7",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "oddsType",
+            "in": "query",
+            "description": "A, B, C, D",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "isTmb",
+            "in": "query",
+            "description": "特码A = 0, 特码B = 1",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "settingCode",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "midCode",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "isRefresh",
+            "in": "query",
+            "description": "False = will show all, True = will only show any updated odds",
+            "required": false,
+            "type": "boolean",
+            "default": false
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/PlaceBet/ConfirmGameBet": {
+      "post": {
+        "tags": ["PlaceBet"],
+        "summary": "确认投注",
+        "operationId": "ConfirmGameBet",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "betDto",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.PlaceBet.GameBetDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/PlaceBet/CurrentBets/{lotteryType}": {
+      "get": {
+        "tags": ["PlaceBet"],
+        "summary": "Get current bet list",
+        "operationId": "CurrentBets",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "record",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/PlaceBet/GamesOdds/{lotteryType}": {
+      "get": {
+        "tags": ["PlaceBet"],
+        "summary": "Get game odds",
+        "operationId": "GamesOdds",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "iType",
+            "in": "query",
+            "description": "-1, 7",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "oddsType",
+            "in": "query",
+            "description": "A, B, C, D",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "isTmb",
+            "in": "query",
+            "description": "特码A = 0, 特码B = 1",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "settingCode",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "midCode",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "isRefresh",
+            "in": "query",
+            "description": "False = will show all, True = will only show any updated odds",
+            "required": false,
+            "type": "boolean",
+            "default": false
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/PlaceBet/ConfirmGameBet": {
+      "post": {
+        "tags": ["PlaceBet"],
+        "summary": "确认投注",
+        "operationId": "ConfirmGameBet",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "betDto",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.PlaceBet.GameBetDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/ResultHistory/GetResult/{lotteryType}": {
+      "get": {
+        "tags": ["ResultHistory"],
+        "summary": "Lotteryresult from 1.0",
+        "operationId": "GetResult",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lotteryTime",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 1
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 30
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/ResultHistory/GetTop/{lotteryType}": {
+      "get": {
+        "tags": ["ResultHistory"],
+        "summary": "取前几开奖结果记录",
+        "operationId": "GetTop",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "description": "彩种",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 10
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/ResultHistory/GetResult/{lotteryType}": {
+      "get": {
+        "tags": ["ResultHistory"],
+        "summary": "Lotteryresult from 1.0",
+        "operationId": "GetResult",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "lotteryTime",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 1
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 30
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/ResultHistory/GetTop/{lotteryType}": {
+      "get": {
+        "tags": ["ResultHistory"],
+        "summary": "取前几开奖结果记录",
+        "operationId": "GetTop",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "description": "彩种",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 10
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/ThirdPartyGames/Transfer": {
+      "get": {
+        "tags": ["ThirdPartyGames"],
+        "summary": "OutSite/LoadAmount from 1.0 | Transfer amount view page and Transfer records view page for Third Party games",
+        "operationId": "Transfer",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/ThirdPartyGames/TransferAmount": {
+      "post": {
+        "tags": ["ThirdPartyGames"],
+        "summary": "额度转换交易, Transfer 3rd party money",
+        "operationId": "TransferAmount",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "transDto",
+            "in": "body",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.ThirdParty.TransferDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/ThirdPartyGames/LoadAmount/{gameCode}": {
+      "get": {
+        "tags": ["ThirdPartyGames"],
+        "summary": "Reload amount for all Third Party games",
+        "operationId": "LoadAmount",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "gameCode",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "fromSite",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/ThirdPartyGames/BetHistory": {
+      "get": {
+        "tags": ["ThirdPartyGames"],
+        "summary": "Get third party games bet history with date range",
+        "operationId": "BetHistory",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "beginTime",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "endTime",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "orderId",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "gameCode",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "settleStatus",
+            "in": "query",
+            "description": "结算状态 -1:全部 1-已结 2-未结 0-其他",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": -1
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 1
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 10
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/ThirdPartyGames/GameUrl/{gameCode}": {
+      "get": {
+        "tags": ["ThirdPartyGames"],
+        "summary": "Generate URL for redirect to 3rd party games",
+        "operationId": "GameUrl",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "gameCode",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "fromSite",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "params1",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "params2",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/ThirdPartyGames/AutoGamesTransfer/{loginId}": {
+      "get": {
+        "tags": ["ThirdPartyGames"],
+        "summary": "Enable/Disable Third Party games auto transfer",
+        "operationId": "AutoGamesTransfer",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "loginId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/ThirdPartyGames/ReturnFunds/{loginId}": {
+      "post": {
+        "tags": ["ThirdPartyGames"],
+        "operationId": "ReturnFunds",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "loginId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/ThirdPartyGames/LoadMainAmount": {
+      "get": {
+        "tags": ["ThirdPartyGames"],
+        "summary": "OutSite/LoadMainAmount from 1.0 | 加载主账户余额",
+        "operationId": "LoadMainAmount",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/ThirdPartyGames/Transfer": {
+      "get": {
+        "tags": ["ThirdPartyGames"],
+        "summary": "Transfer amount view page and Transfer records view page for Third Party games",
+        "operationId": "Transfer",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/ThirdPartyGames/TransferAmount": {
+      "post": {
+        "tags": ["ThirdPartyGames"],
+        "summary": "额度转换交易, Transfer 3rd party money",
+        "operationId": "TransferAmount",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "transDto",
+            "in": "body",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.ThirdParty.TransferDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/ThirdPartyGames/LoadAmount/{gameCode}": {
+      "get": {
+        "tags": ["ThirdPartyGames"],
+        "summary": "Reload amount for all Third Party games",
+        "operationId": "LoadAmount",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "gameCode",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "fromSite",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/ThirdPartyGames/BetHistory": {
+      "get": {
+        "tags": ["ThirdPartyGames"],
+        "summary": "Get third party games bet history with date range",
+        "operationId": "BetHistory",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "beginTime",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "endTime",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "gameCode",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "settleStatus",
+            "in": "query",
+            "description": "结算状态 -1:全部 1-已结 2-未结 0-其他",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": -1
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 1
+          },
+          {
+            "name": "rows",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 10
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/ThirdPartyGames/GameUrl/{gameCode}": {
+      "get": {
+        "tags": ["ThirdPartyGames"],
+        "summary": "Generate URL for redirect to 3rd party games",
+        "operationId": "GameUrl",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "gameCode",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "fromSite",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "params1",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "params2",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/ThirdPartyGames/AutoGamesTransfer/{loginId}": {
+      "get": {
+        "tags": ["ThirdPartyGames"],
+        "summary": "Enable/Disable Third Party games auto transfer",
+        "operationId": "AutoGamesTransfer",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "loginId",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/ThirdPartyGames/ReturnFunds/{loginId}": {
+      "post": {
+        "tags": ["ThirdPartyGames"],
+        "operationId": "ReturnFunds",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "loginId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/TopUp/GetInfo": {
+      "get": {
+        "tags": ["TopUp"],
+        "summary": "Cash/Deposit from 1.0 | 充值, Cash Top up page informations",
+        "operationId": "GetInfo",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/TopUp/Verify": {
+      "get": {
+        "tags": ["TopUp"],
+        "summary": "Verify top up that requires the back-end admins to check. Complete the TopUp.\r\nCheckDeposit method in User1.0",
+        "operationId": "Verify",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "transferID",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/TopUp/CheckStatus": {
+      "get": {
+        "tags": ["TopUp"],
+        "summary": "Check top up status after order has been made, called at an interval\r\nKeepDeposit method in User1.0",
+        "operationId": "CheckStatus",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "transferID",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/TopUp/Cancel": {
+      "get": {
+        "tags": ["TopUp"],
+        "summary": "Cancel top up",
+        "operationId": "Cancel",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "transferID",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/TopUp/Save": {
+      "post": {
+        "tags": ["TopUp"],
+        "summary": "Save third party top up method\r\nSaveDeposit, SaveDepositDSN, DoSaveDeposit method in User1.0\r\nCombined 3 methods into 1, as no longer uses Template to differentiate the methods\r\nTemplate should be checked at the front-end to determine the input parameters\r\nNormal input parameter -&gt; {AcAmount, BankCode, ThirdPartyID, BankUserName, SafeCheck = true}",
+        "operationId": "Save",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "topupDto",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Cash.SaveTopUpDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/TopUp/GetInfo": {
+      "get": {
+        "tags": ["TopUp"],
+        "summary": "Cash/Deposit from 1.0 | 充值, Cash Top up page informations",
+        "operationId": "GetInfo",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/TopUp/Verify": {
+      "get": {
+        "tags": ["TopUp"],
+        "summary": "Verify top up that requires the back-end admins to check. Complete the TopUp.\r\nCheckDeposit method in User1.0",
+        "operationId": "Verify",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "transferID",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/TopUp/CheckStatus": {
+      "get": {
+        "tags": ["TopUp"],
+        "summary": "Check top up status after order has been made, called at an interval\r\nKeepDeposit method in User1.0",
+        "operationId": "CheckStatus",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "transferID",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/TopUp/Cancel": {
+      "get": {
+        "tags": ["TopUp"],
+        "summary": "Cancel top up",
+        "operationId": "Cancel",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "transferID",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/TopUp/Save": {
+      "post": {
+        "tags": ["TopUp"],
+        "summary": "Save third party top up method\r\nSaveDeposit, SaveDepositDSN, DoSaveDeposit method in User1.0\r\nCombined 3 methods into 1, as no longer uses Template to differentiate the methods\r\nTemplate should be checked at the front-end to determine the input parameters\r\nNormal input parameter -&gt; {AcAmount, BankCode, ThirdPartyID, BankUserName, SafeCheck = true}",
+        "operationId": "Save",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "topupDto",
+            "in": "body",
+            "description": "",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Cash.SaveTopUpDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Trend/GetInfo/{lotteryType}": {
+      "get": {
+        "tags": ["Trend"],
+        "summary": "Get single lottery trend information",
+        "operationId": "GetInfo",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Trend/GetDayResult/{lotteryType}": {
+      "get": {
+        "tags": ["Trend"],
+        "summary": "PlaceBet/DayResult from 1.0",
+        "operationId": "GetDayResult",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "ftType",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 0
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 20
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Trend/GetMultiInfo": {
+      "get": {
+        "tags": ["Trend"],
+        "summary": "Get multiple trend information",
+        "operationId": "GetMultiInfo",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "minCount",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 2
+          },
+          {
+            "name": "maxCount",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 10
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Trend/SaveTrendPreference": {
+      "post": {
+        "tags": ["Trend"],
+        "operationId": "SaveTrendPreference",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "trendDto",
+            "in": "body",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Trend.TrendSettingDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Trend/GetInfo/{lotteryType}": {
+      "get": {
+        "tags": ["Trend"],
+        "operationId": "GetInfo",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Trend/GetDayResult/{lotteryType}": {
+      "get": {
+        "tags": ["Trend"],
+        "summary": "PlaceBet/DayResult from 1.0",
+        "operationId": "GetDayResult",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "lotteryType",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "ftType",
+            "in": "query",
+            "description": "",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 0
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32",
+            "default": 20
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Withdraw/GetInfo": {
+      "get": {
+        "tags": ["Withdraw"],
+        "summary": "提款, Cash withdraw page informations",
+        "operationId": "GetInfo",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/Withdraw/Save": {
+      "post": {
+        "tags": ["Withdraw"],
+        "operationId": "Save",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "svWithDto",
+            "in": "body",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Cash.SaveWithdrawDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Withdraw/GetInfo": {
+      "get": {
+        "tags": ["Withdraw"],
+        "summary": "提款, Cash withdraw page informations",
+        "operationId": "GetInfo",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    },
+    "/api/mobile/Withdraw/Save": {
+      "post": {
+        "tags": ["Withdraw"],
+        "operationId": "Save",
+        "consumes": ["application/json"],
+        "produces": [],
+        "parameters": [
+          {
+            "name": "svWithDto",
+            "in": "body",
+            "required": false,
+            "schema": { "$ref": "#/definitions/Models.Cash.SaveWithdrawDto" }
+          }
+        ],
+        "responses": {
+          "200": { "description": "Success" },
+          "400": { "description": "Bad Request" },
+          "500": { "description": "Server Error" }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Models.BettingList.BetListRes": {
+      "type": "object",
+      "properties": {
+        "betList": {
+          "description": "Bet List\r\n注单",
+          "uniqueItems": false,
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Models.BettingList.BetListRes.betList"
+          }
+        },
+        "sum": {
+          "description": "total sum \r\n各总数",
+          "uniqueItems": false,
+          "type": "array",
+          "items": { "$ref": "#/definitions/Models.BettingList.BetListRes.sum" }
+        },
+        "records": {
+          "description": "count for this query list \r\n此查询数据",
+          "type": "string"
+        },
+        "totalRecords": {
+          "description": "total records \r\n总数据",
+          "type": "string"
+        },
+        "numOfPage": {
+          "description": "total records \r\n总数据",
+          "type": "string"
+        }
+      }
+    },
+    "Models.BettingList.BetListRes.betList": {
+      "type": "object",
+      "properties": {
+        "oddNo": { "description": "odd number\r\n注单号", "type": "string" },
+        "lotteryName": {
+          "description": "lottery name\r\n彩种",
+          "type": "string"
+        },
+        "installments": {
+          "description": "draw serial number\r\n期数",
+          "type": "string"
+        },
+        "oddsType": {
+          "description": "odds type \r\n赔率类型",
+          "type": "string"
+        },
+        "midType": { "description": "mid type\r\n中间种类", "type": "string" },
+        "displayName": {
+          "description": "display name\r\n显示名",
+          "type": "string"
+        },
+        "odds": { "description": "odds\r\n赔率", "type": "string" },
+        "returnAmount": {
+          "description": "cashback amount\r\n退水金额",
+          "type": "string"
+        },
+        "returnValue": {
+          "description": "cashback value\r\n退水(%)",
+          "type": "string"
+        },
+        "bettingAmount": {
+          "description": "betting amount\r\n投注金额",
+          "type": "string"
+        },
+        "result": {
+          "description": "result for this bet\r\n此注单结果",
+          "type": "string"
+        },
+        "createDate": {
+          "description": "create date\r\n创建日期",
+          "type": "string"
+        },
+        "deleteFlag": {
+          "description": "is deleted\r\n删除标识",
+          "type": "string",
+          "example": "1 = Yes, 0 = No"
+        }
+      }
+    },
+    "Models.BettingList.BetListRes.sum": {
+      "type": "object",
+      "properties": {
+        "bettingAmount": {
+          "description": "bet amount\r\n投注金额",
+          "type": "string"
+        },
+        "result": { "description": "result\r\n注单结果", "type": "string" },
+        "totalResult": {
+          "description": "total result\r\n注单总结果",
+          "type": "string"
+        },
+        "totalBettingAmount": {
+          "description": "total result\r\n投注总数",
+          "type": "string"
+        }
+      }
+    },
+    "Models.BettingList.BetHistoryRes": {
+      "type": "object",
+      "properties": {
+        "betList": {
+          "description": "BetList of the body",
+          "uniqueItems": false,
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Models.BettingList.BetHistoryRes.betList"
+          }
+        },
+        "sum": {
+          "description": "Sum of the body",
+          "uniqueItems": false,
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Models.BettingList.BetHistoryRes.sum"
+          }
+        }
+      }
+    },
+    "Models.BettingList.BetHistoryRes.betList": {
+      "type": "object",
+      "properties": {
+        "displayName": {
+          "description": "dispaly name\r\n显示名",
+          "type": "string"
+        },
+        "records": { "description": "odds\r\n赔率", "type": "string" },
+        "returnValue": {
+          "description": "cashback amount\r\n退水金额",
+          "type": "string"
+        },
+        "bettingAmount": {
+          "description": "betting amount\r\n投注金额",
+          "type": "string"
+        },
+        "result": {
+          "description": "result for this bet\r\n此注单结果",
+          "type": "string"
+        },
+        "reportDate": {
+          "description": "report date\r\n报告日期",
+          "type": "string"
+        }
+      }
+    },
+    "Models.BettingList.BetHistoryRes.sum": {
+      "type": "object",
+      "properties": {
+        "bettingAmount": {
+          "description": "bet amount\r\n投注金额",
+          "type": "string"
+        },
+        "returnAmount": {
+          "description": "cashback amount\r\n退水金额",
+          "type": "string"
+        },
+        "totalResult": {
+          "description": "cashback total amount\r\n退水金额总金额",
+          "type": "string"
+        },
+        "betCount": { "description": "bet count\r\n投注数", "type": "string" }
+      }
+    },
+    "Models.Cash.ForgotPasswordDto": {
+      "type": "object",
+      "properties": {
+        "loginId": { "type": "string" },
+        "phoneNumber": { "type": "string" },
+        "verifyCode": { "type": "string" }
+      }
+    },
+    "Models.Member.PasswordDto": {
+      "type": "object",
+      "properties": {
+        "oldPassword": { "type": "string" },
+        "newPassword": { "type": "string" },
+        "cfmPassword": { "type": "string" }
+      }
+    },
+    "Models.Cash.WithdrawPassDto": {
+      "type": "object",
+      "properties": {
+        "action": { "type": "string" },
+        "oldSafePass": { "type": "string" },
+        "newSafePass": { "type": "string" },
+        "confirmNewPass": { "type": "string" },
+        "verifyCode": { "type": "string" }
+      }
+    },
+    "Models.Cash.SaveCashMemDto": {
+      "type": "object",
+      "properties": {
+        "familyName": { "type": "string" },
+        "gender": { "type": "string" },
+        "dateOfBirth": { "type": "string" }
+      }
+    },
+    "Models.Cash.SaveBankDto": {
+      "type": "object",
+      "properties": {
+        "action": {
+          "description": "Save - add, Update - empty string",
+          "type": "string"
+        },
+        "cardNumber": { "type": "string" },
+        "bankCode": { "type": "string" },
+        "bankName": { "type": "string" },
+        "bankAddress": { "type": "string" },
+        "bankType": {
+          "description": "USDT - DIGITAL, CASH - BANKS",
+          "type": "string"
+        },
+        "withdrawPW": { "type": "string" }
+      }
+    },
+    "Models.Cash.SaveGiftAddressDto": {
+      "type": "object",
+      "properties": {
+        "address": { "type": "string" },
+        "address2": { "type": "string" },
+        "receiverName": { "type": "string" },
+        "phone": { "type": "string" }
+      }
+    },
+    "Hb.Lhc.ViewModel.UserAccountBalanceInfo": {
+      "type": "object",
+      "properties": {
+        "moneyLimit": { "format": "double", "type": "number" },
+        "todayWinlost": { "format": "double", "type": "number" },
+        "uncheckAmount": { "format": "double", "type": "number" },
+        "balance": { "format": "double", "type": "number" },
+        "lockAmount": { "format": "double", "type": "number" },
+        "wxClientTotal": { "format": "double", "type": "number" }
+      }
+    },
+    "Models.Cash.ClientSaveTopUpDto": {
+      "type": "object",
+      "properties": {
+        "actionType": {
+          "format": "int32",
+          "description": "ActionType",
+          "enum": [
+            100, 200, 300, 400, 401, 500, 501, 600, 700, 701, 800, 899, 910,
+            911, 997, 998, 999
+          ],
+          "type": "integer"
+        },
+        "acAmount": {
+          "format": "double",
+          "description": "充值总数 \r\nTopup value",
+          "type": "number"
+        },
+        "currencyCode": { "description": "货币\r\nCurrency", "type": "string" },
+        "thirdPartyID": { "description": "支付ID\r\nPay ID", "type": "string" },
+        "sign": { "description": "MD5签名", "type": "string" }
+      }
+    },
+    "Models.Member.LoginDto": {
+      "type": "object",
+      "properties": {
+        "username": { "type": "string" },
+        "password": { "type": "string" }
+      }
+    },
+    "Models.Member.ClientLoginDto": {
+      "type": "object",
+      "properties": {
+        "isMobile": {
+          "description": "Is mobile entry\r\n手机端入口",
+          "type": "string",
+          "example": "1 = Yes, 0 = No"
+        },
+        "loginId": {
+          "description": "The unique user id\r\n玩家识别码",
+          "type": "string"
+        },
+        "merchantId": {
+          "description": "Merchant Id\r\n商号",
+          "type": "string"
+        },
+        "sign": { "description": "MD5签名", "type": "string" }
+      }
+    },
+    "Models.Member.LogoutDto": {
+      "type": "object",
+      "properties": {
+        "loginId": { "type": "string" },
+        "refreshToken": { "type": "string" }
+      }
+    },
+    "Models.Member.CreateMemberDto": {
+      "type": "object",
+      "properties": {
+        "loginName": { "description": "Login ID", "type": "string" },
+        "password": { "description": "Password", "type": "string" },
+        "affCode": {
+          "description": "Affiliation Code (Provided by agents)",
+          "type": "string"
+        },
+        "captchaCode": { "description": "Captcha Code", "type": "string" },
+        "safeCode": { "description": "SMS Code / 2FA Code", "type": "string" },
+        "safePhone": { "description": "User Phone number", "type": "string" }
+      }
+    },
+    "Models.Member.FeedbackDto": {
+      "type": "object",
+      "properties": {
+        "feedbackType": {
+          "format": "int32",
+          "description": "Feedback Type\r\nUses Hb.Lhc.Common.CashEnums.MessageType",
+          "type": "integer"
+        },
+        "title": { "description": "Feedback Title", "type": "string" },
+        "content": { "description": "Feedback Content", "type": "string" }
+      }
+    },
+    "Models.PlaceBet.GameBetDto": {
+      "type": "object",
+      "properties": {
+        "betData": {
+          "uniqueItems": false,
+          "type": "array",
+          "items": { "$ref": "#/definitions/Member.PlaceBetListInfo" }
+        },
+        "betNumber": { "type": "string" },
+        "isLatestOdds": { "type": "boolean" },
+        "lotteryType": { "type": "string" },
+        "gameType": { "type": "string" }
+      }
+    },
+    "Member.PlaceBetListInfo": {
+      "type": "object",
+      "properties": {
+        "oddNo": { "type": "string" },
+        "memberId": { "type": "string" },
+        "companyId": { "type": "string" },
+        "returnValue": { "format": "double", "type": "number" },
+        "oddsType": { "type": "string" },
+        "installments": { "type": "string" },
+        "lotteryDate": { "format": "date-time", "type": "string" },
+        "placeBetContent": { "type": "string" },
+        "bettingAmount": { "format": "double", "type": "number" },
+        "beforeAmount": { "format": "double", "type": "number" },
+        "odds": { "format": "double", "type": "number" },
+        "returnAmount": { "format": "double", "type": "number" },
+        "result": { "format": "double", "type": "number" },
+        "ip": { "type": "string" },
+        "note": { "type": "string" },
+        "agentId": { "type": "string" },
+        "bigType": { "type": "string" },
+        "midType": { "type": "string" },
+        "subType": { "type": "string" },
+        "displayName": { "type": "string" },
+        "loginName": { "type": "string" },
+        "code": { "format": "int32", "type": "integer" },
+        "createBy": { "type": "string" },
+        "updateBy": { "type": "string" },
+        "deleteFlag": { "format": "int32", "type": "integer" },
+        "finished": { "format": "int32", "type": "integer" },
+        "status": { "format": "int32", "type": "integer" },
+        "buhuo": { "format": "int32", "type": "integer" },
+        "iType": { "format": "int32", "type": "integer" },
+        "settingCode": { "type": "string" },
+        "oddsCode": { "type": "string" },
+        "webSiteId": { "type": "string" },
+        "lotteryType": { "type": "string" },
+        "maxLevel": { "format": "int32", "type": "integer" },
+        "limitType": { "format": "int32", "type": "integer" },
+        "winType": { "format": "int32", "type": "integer" },
+        "betDetail": { "$ref": "#/definitions/Member.BetResultInfo" },
+        "midCode": { "type": "string" },
+        "qishuDate": { "format": "date-time", "type": "string" },
+        "keyCode": { "type": "string" },
+        "lotteryName": { "type": "string" },
+        "batchId": { "type": "string" },
+        "upOrgList": {
+          "uniqueItems": false,
+          "type": "array",
+          "items": { "$ref": "#/definitions/Member.OrganizationInfo" }
+        },
+        "amount": { "format": "int32", "type": "integer" },
+        "isTmb": { "format": "int32", "type": "integer" },
+        "hashCode": { "type": "string" },
+        "limitSetting": {
+          "uniqueItems": false,
+          "type": "array",
+          "items": { "format": "double", "type": "number" }
+        },
+        "oddsCmSetting": {
+          "uniqueItems": false,
+          "type": "array",
+          "items": { "format": "double", "type": "number" }
+        },
+        "moneyup": { "format": "int32", "type": "integer" },
+        "wxUserId": { "type": "string" },
+        "oddsDiff": { "format": "double", "type": "number" },
+        "plantFormCMA": { "format": "double", "type": "number" },
+        "plantFormCM": { "format": "double", "type": "number" },
+        "id": { "type": "string" },
+        "createDate": { "format": "date-time", "type": "string" },
+        "updateDate": { "format": "date-time", "type": "string" }
+      }
+    },
+    "Member.BetResultInfo": {
+      "type": "object",
+      "properties": {
+        "pencent1": { "format": "double", "type": "number" },
+        "pencent2": { "format": "double", "type": "number" },
+        "pencent3": { "format": "double", "type": "number" },
+        "pencent4": { "format": "double", "type": "number" },
+        "pencent5": { "format": "double", "type": "number" },
+        "pencent6": { "format": "double", "type": "number" },
+        "pencent7": { "format": "double", "type": "number" },
+        "pencent8": { "format": "double", "type": "number" },
+        "pencent9": { "format": "double", "type": "number" },
+        "pencent10": { "format": "double", "type": "number" },
+        "zc1": { "format": "double", "type": "number" },
+        "zc2": { "format": "double", "type": "number" },
+        "zc3": { "format": "double", "type": "number" },
+        "zc4": { "format": "double", "type": "number" },
+        "zc5": { "format": "double", "type": "number" },
+        "zc6": { "format": "double", "type": "number" },
+        "zc7": { "format": "double", "type": "number" },
+        "zc8": { "format": "double", "type": "number" },
+        "zc9": { "format": "double", "type": "number" },
+        "zc10": { "format": "double", "type": "number" },
+        "upAmount1": { "format": "double", "type": "number" },
+        "upAmount2": { "format": "double", "type": "number" },
+        "upAmount3": { "format": "double", "type": "number" },
+        "upAmount4": { "format": "double", "type": "number" },
+        "upAmount5": { "format": "double", "type": "number" },
+        "upAmount6": { "format": "double", "type": "number" },
+        "upAmount7": { "format": "double", "type": "number" },
+        "upAmount8": { "format": "double", "type": "number" },
+        "upAmount9": { "format": "double", "type": "number" },
+        "upAmount10": { "format": "double", "type": "number" },
+        "back1": { "format": "double", "type": "number" },
+        "back2": { "format": "double", "type": "number" },
+        "back3": { "format": "double", "type": "number" },
+        "back4": { "format": "double", "type": "number" },
+        "back5": { "format": "double", "type": "number" },
+        "back6": { "format": "double", "type": "number" },
+        "back7": { "format": "double", "type": "number" },
+        "back8": { "format": "double", "type": "number" },
+        "back9": { "format": "double", "type": "number" },
+        "back10": { "format": "double", "type": "number" },
+        "oddsDiff1": { "format": "double", "type": "number" },
+        "oddsDiff2": { "format": "double", "type": "number" },
+        "oddsDiff3": { "format": "double", "type": "number" },
+        "oddsDiff4": { "format": "double", "type": "number" },
+        "oddsDiff5": { "format": "double", "type": "number" },
+        "oddsDiff6": { "format": "double", "type": "number" },
+        "oddsDiff7": { "format": "double", "type": "number" },
+        "oddsDiff8": { "format": "double", "type": "number" },
+        "oddsDiff9": { "format": "double", "type": "number" },
+        "oddsDiff10": { "format": "double", "type": "number" },
+        "qishuDate": { "format": "date-time", "type": "string" },
+        "id": { "type": "string" },
+        "createDate": { "format": "date-time", "type": "string" },
+        "updateDate": { "format": "date-time", "type": "string" }
+      }
+    },
+    "Member.OrganizationInfo": {
+      "type": "object",
+      "properties": {
+        "organizationId": { "type": "string" },
+        "userId": { "type": "string", "readOnly": true },
+        "parentId": { "type": "string" },
+        "name": { "type": "string" },
+        "loginId": { "type": "string" },
+        "password": { "type": "string" },
+        "parent": { "format": "int32", "type": "integer" },
+        "active": { "format": "int32", "type": "integer" },
+        "isOnline": { "format": "int32", "type": "integer" },
+        "isChild": { "format": "int32", "type": "integer" },
+        "levelValue": { "format": "int32", "type": "integer" },
+        "gameType": { "type": "string" },
+        "useState": { "format": "int32", "type": "integer" },
+        "companyId": { "type": "string" },
+        "loginTime": { "type": "string" },
+        "loginIP": { "type": "string" },
+        "loginCount": { "format": "int32", "type": "integer" },
+        "timeStamp": { "format": "date-time", "type": "string" },
+        "balance": { "format": "double", "type": "number" },
+        "moneyLimit": { "format": "double", "type": "number" },
+        "createBy": { "type": "string" },
+        "updateBy": { "type": "string" },
+        "rateSurplus": { "format": "int32", "type": "integer" },
+        "replenishmentType": { "format": "int32", "type": "integer" },
+        "replenishmentSurplus": { "format": "int32", "type": "integer" },
+        "branchReplenishment": { "format": "int32", "type": "integer" },
+        "org1": { "type": "string" },
+        "org2": { "type": "string" },
+        "org3": { "type": "string" },
+        "org4": { "type": "string" },
+        "limitType": { "format": "int32", "type": "integer" },
+        "superType": { "format": "int32", "type": "integer" },
+        "roleId": { "type": "string" },
+        "changePasswordDate": { "format": "date-time", "type": "string" },
+        "org6": { "type": "string" },
+        "org7": { "type": "string" },
+        "org8": { "type": "string" },
+        "org9": { "type": "string" },
+        "org10": { "type": "string" },
+        "org5": { "type": "string" },
+        "language": { "type": "string" },
+        "agentCount": { "format": "int32", "type": "integer" },
+        "memberCount": { "format": "int32", "type": "integer" },
+        "directAgentCount": { "format": "int32", "type": "integer" },
+        "directMemberCount": { "format": "int32", "type": "integer" },
+        "multiOdd": { "format": "int32", "type": "integer" },
+        "zcType": { "format": "int32", "type": "integer" },
+        "quickReturn": { "format": "double", "type": "number" },
+        "lotteryAssigned": { "format": "int32", "type": "integer" },
+        "effectiveArea": { "format": "int32", "type": "integer" },
+        "useStateOrder": { "format": "int32", "type": "integer" },
+        "isLocked": { "format": "int32", "type": "integer" },
+        "defGameType": { "type": "string" },
+        "isDefault": { "format": "int32", "type": "integer" },
+        "bindHost": { "type": "string" },
+        "validType": { "format": "int32", "type": "integer" },
+        "mfaCode": { "type": "string" },
+        "orgOddsSetting": { "format": "int32", "type": "integer" },
+        "orgCtrlSetting": { "format": "int32", "type": "integer" },
+        "upOrgOddsSetting": { "format": "int32", "type": "integer" },
+        "orgOddsSettingTemp": { "format": "int32", "type": "integer" },
+        "orgOddsSettingTempStatus": { "format": "int32", "type": "integer" },
+        "rowsCount": { "format": "int32", "type": "integer" },
+        "accountStatus": { "format": "int32", "type": "integer" },
+        "outSiteReturnState": { "format": "int32", "type": "integer" },
+        "id": { "type": "string" },
+        "createDate": { "format": "date-time", "type": "string" },
+        "updateDate": { "format": "date-time", "type": "string" }
+      }
+    },
+    "Models.ThirdParty.TransferDto": {
+      "type": "object",
+      "properties": {
+        "fromCode": { "type": "string" },
+        "toCode": { "type": "string" },
+        "acAmount": { "format": "double", "type": "number" },
+        "fromSite": { "type": "string" }
+      }
+    },
+    "Models.Cash.SaveTopUpDto": {
+      "type": "object",
+      "properties": {
+        "acAmount": { "format": "double", "type": "number" },
+        "bankCode": { "type": "string" },
+        "bankUserName": { "type": "string" },
+        "thirdPartyID": { "type": "string" },
+        "currencyCode": { "type": "string" }
+      }
+    },
+    "Models.Trend.TrendSettingDto": {
+      "type": "object",
+      "properties": {
+        "lotteryType": { "type": "string" },
+        "minCount": { "format": "int32", "type": "integer" },
+        "maxCount": { "format": "int32", "type": "integer" },
+        "isDelete": { "type": "boolean" }
+      }
+    },
+    "Models.Cash.SaveWithdrawDto": {
+      "type": "object",
+      "properties": {
+        "acAmount": { "format": "double", "type": "number" },
+        "bankID": { "type": "string" },
+        "safePass": { "type": "string" }
+      }
+    }
+  },
+  "tags": []
+}

@@ -1,0 +1,2067 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "Navigation Site API",
+    "description": "An ASP.NET Core Web API for navigation web.",
+    "version": "v1"
+  },
+  "servers": [
+    {
+      "url": "https://info-web-sit.noc-16.com",
+      "description": "Default server"
+    }
+  ],
+  "paths": {
+    "/api/Home/GetInfo": {
+      "get": {
+        "tags": [
+          "Home"
+        ],
+        "summary": "Index page data 首页数据 ",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/HomeInfoResDtoListRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/Home/SetStyle/{skin}": {
+      "post": {
+        "tags": [
+          "Home"
+        ],
+        "summary": "Save style inside cache 缓存自定义颜色",
+        "description": "Save style inside cache <br> <b>缓存自定义颜色</b>",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "skin",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/StringRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/Home/Verify/{verificationCode}": {
+      "post": {
+        "tags": [
+          "Home"
+        ],
+        "summary": "Verify the user 验证用户",
+        "description": "Verify the user <br> <b>验证用户</b>",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "verificationCode",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/StringRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/Home/Ping": {
+      "get": {
+        "tags": [
+          "Home"
+        ],
+        "summary": "Test connection 测试连接",
+        "description": "Test connection <br> <b>测试连接</b>",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/WeatherForecast"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/Manager/GetUserSites": {
+      "get": {
+        "tags": [
+          "Manager"
+        ],
+        "summary": "Get List of sites 获取站点列表 ",
+        "description": "<ul><li><b>main</b> = 按 SortNo 升序排列 order by SortNo asc </li><li><b>recent</b> = 按 CreateTime 降序排列 order by CreateTime des</li><li><b>star</b>= 按星级查找 find star by input</li><li><b>others</b>= 按 SortNo 升序排列 order by SortNo asc</li></ul>",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "sort",
+            "type": "string",
+            "default": ""
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden, login required"
+          },
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/GetSiteListResDtoListRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/Manager/SearchUserSites": {
+      "get": {
+        "tags": [
+          "Manager"
+        ],
+        "summary": "Search User Sites by Site Name 用名字获取站点",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "SiteName",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden, login required"
+          },
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/UserSitesDtoListRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/Manager/SaveGroups": {
+      "post": {
+        "tags": [
+          "Manager"
+        ],
+        "summary": "Update List of Groups 更新群组s",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "required": true,
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/GroupDto"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden, login required"
+          },
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/StringRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/Manager/DelGroup": {
+      "delete": {
+        "tags": [
+          "Manager"
+        ],
+        "summary": "Delete Group 删除群组",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/DelDto"
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden, login required"
+          },
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/StringRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/Manager/EditGroup": {
+      "post": {
+        "tags": [
+          "Manager"
+        ],
+        "summary": "Update Group 更新群组",
+        "description": "For Operation variable:<ul><li><b>0</b> = add </li><li><b>1</b> = update</li></ul>",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/UpdateGroupReqDto"
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden, login required"
+          },
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/StringRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/Manager/EditDomain": {
+      "post": {
+        "tags": [
+          "Manager"
+        ],
+        "summary": "Update Domain 更新域名",
+        "description": "For Operation variable:<ul><li><b>0</b> = add </li><li><b>1</b> = update</li></ul>",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/UpdateDomainReqDto"
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden, login required"
+          },
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/StringRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/Manager/SaveUserSiteOrder": {
+      "post": {
+        "tags": [
+          "Manager"
+        ],
+        "summary": "Update Order of User Site 更新用户站点顺序",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/OrderDto"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden, login required"
+          },
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/StringRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/Manager/DelUserSites": {
+      "delete": {
+        "tags": [
+          "Manager"
+        ],
+        "summary": "Del List of User Site 删除用户站点s",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden, login required"
+          },
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/StringRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/Manager/SetStar/{id}": {
+      "post": {
+        "tags": [
+          "Manager"
+        ],
+        "summary": "Set Star 放星星",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "id",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden, login required"
+          },
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/StringRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/Manager/GetSiteLines": {
+      "get": {
+        "tags": [
+          "Manager"
+        ],
+        "summary": "Get Site Lines 站点路线",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "siteID",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden, login required"
+          },
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/GetSiteLineResDtoRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/Manager/SaveLine": {
+      "post": {
+        "tags": [
+          "Manager"
+        ],
+        "summary": "Update Site Line 更新站点路线",
+        "description": "For Operation variable:<ul><li><b>0</b> = add </li><li><b>1</b> = update</li></ul>",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/UpdateLineReqDto"
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden, login required"
+          },
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/SiteLineDtoRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/Manager/DelLine": {
+      "delete": {
+        "tags": [
+          "Manager"
+        ],
+        "summary": "Del Site Line 删除站点路线",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/DelSiteLineReqDto"
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden, login required"
+          },
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/StringRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/Manager/ReplaceLine": {
+      "post": {
+        "tags": [
+          "Manager"
+        ],
+        "summary": "Replace Site Line by word 替换站点路线 （字符或全部）",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/ReplaceLineReqDto"
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden, login required"
+          },
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/StringRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/Manager/GetSysConfig": {
+      "get": {
+        "tags": [
+          "Manager"
+        ],
+        "summary": "System Config 网站设置",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden, login required"
+          },
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/SysConfigDtoRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/Manager/UpdateBaseConfig": {
+      "post": {
+        "tags": [
+          "Manager"
+        ],
+        "summary": "Update System Config 更新网站设置",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/SysConfigDto"
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden, login required"
+          },
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/SysConfigDtoRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/Manager/GetUsers": {
+      "get": {
+        "tags": [
+          "Manager"
+        ],
+        "summary": "Get List of users 获取用户列表",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "pageIndex",
+            "type": "integer",
+            "format": "int32",
+            "default": 1
+          },
+          {
+            "in": "query",
+            "name": "pageSize",
+            "type": "integer",
+            "format": "int32",
+            "default": 50
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden, login required"
+          },
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/UserManageDtoListRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/Manager/FindUser": {
+      "get": {
+        "tags": [
+          "Manager"
+        ],
+        "summary": "Find user by name 用名字获取用户",
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "name",
+            "type": "string"
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden, login required"
+          },
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/UserInfoDtoListRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/Manager/SaveUser": {
+      "post": {
+        "tags": [
+          "Manager"
+        ],
+        "summary": "Update user 更新用户",
+        "description": "<b>Caution!! Currently only update is available!</b><br>For Operation variable:<ul><li><b>0</b> = add </li><li><b>1</b> = update</li></ul>",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/SaveUserReqDto"
+            }
+          }
+        ],
+        "responses": {
+          "403": {
+            "description": "Forbidden, login required"
+          },
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/UserInfoDtoListRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/User/Captcha": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Captcha 验证码",
+        "description": "Captcha <br> <b>验证码</b>",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "format": "binary",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/api/User/Login": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Login 登录",
+        "description": "Login <br> <b>登录</b>",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/LoginReqDto"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/TokenResDtoRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/User/GetRegInfo": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Register Info 注册页资料",
+        "description": "Register Info<br> <b>注册页资料</b>",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/RegInfoResDtoRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/User/Register": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Register 注册",
+        "description": "Register <br> <b>注册</b>",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/RegisterReqDto"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/TokenResDtoRes"
+            }
+          }
+        }
+      }
+    },
+    "/api/User/OnlineCheck": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Online Status 在线状态",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/StringRes"
+            }
+          },
+          "403": {
+            "description": "Forbidden, login required"
+          }
+        }
+      }
+    },
+    "/api/User/Logout": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Logout 登出",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/StringRes"
+            }
+          },
+          "403": {
+            "description": "Forbidden, login required"
+          }
+        }
+      }
+    },
+    "/api/User/GetUserConfig": {
+      "get": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Get User Config 用户设置",
+        "produces": [
+          "application/json"
+        ],
+        "responses": {
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/GetUserConfigResDtoRes"
+            }
+          },
+          "403": {
+            "description": "Forbidden, login required"
+          }
+        }
+      }
+    },
+    "/api/User/UpdateConfig": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Update User Config 用户设置",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/UserDto"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/StringRes"
+            }
+          },
+          "403": {
+            "description": "Forbidden, login required"
+          }
+        }
+      }
+    },
+    "/api/User/ChangePassword": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Update Password 更新密码",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/UpdatePassReqDto"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/StringRes"
+            }
+          },
+          "403": {
+            "description": "Forbidden, login required"
+          }
+        }
+      }
+    },
+    "/api/User/ChangeLoginName": {
+      "post": {
+        "tags": [
+          "User"
+        ],
+        "summary": "Update LoginName 更新用户名",
+        "consumes": [
+          "application/json"
+        ],
+        "produces": [
+          "application/json"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "schema": {
+              "$ref": "#/definitions/UpdateLoginNameReqDto"
+            }
+          }
+        ],
+        "responses": {
+          "400": {
+            "description": "<b>Status = 1</b> for BadRequest",
+            "schema": {
+              "$ref": "#/definitions/Res"
+            }
+          },
+          "200": {
+            "description": "Success",
+            "schema": {
+              "$ref": "#/definitions/StringRes"
+            }
+          },
+          "403": {
+            "description": "Forbidden, login required"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "DelDto": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "description": "ID列表用于删除操作<br>List of IDs for deletion action.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "isSoftDelete": {
+          "format": "int32",
+          "description": "软删除指示 用0表示否，用1表示是<br>Soft delete indicator. Use 0 for no, 1 for yes.",
+          "type": "integer"
+        }
+      }
+    },
+    "DelSiteLineReqDto": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "description": "ID列表用于删除操作<br>List of IDs for deletion action.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "isSoftDelete": {
+          "format": "int32",
+          "description": "软删除指示 用0表示否，用1表示是<br>Soft delete indicator. Use 0 for no, 1 for yes.",
+          "type": "integer"
+        },
+        "siteId": {
+          "description": "此线的父辈Id <br> Site Id of the Line",
+          "type": "string"
+        }
+      }
+    },
+    "GetSiteLineResDto": {
+      "type": "object",
+      "properties": {
+        "siteLists": {
+          "description": "网址<br>Site Lines",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SiteLineDto"
+          }
+        }
+      }
+    },
+    "GetSiteLineResDtoRes": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "msg": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/GetSiteLineResDto"
+        }
+      }
+    },
+    "GetSiteListResDto": {
+      "type": "object",
+      "properties": {
+        "groups": {
+          "description": "分组<br>Group",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GroupDto"
+          }
+        },
+        "siteLists": {
+          "description": "网址名及网线<br>Site Title follow by the links",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserSitesDto"
+          }
+        }
+      }
+    },
+    "GetSiteListResDtoListRes": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "msg": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/GetSiteListResDto"
+          }
+        }
+      }
+    },
+    "GetUserConfigResDto": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "$ref": "#/definitions/UserDto"
+        },
+        "domain": {
+          "description": "网址名及网线<br>Site Link",
+          "type": "string"
+        }
+      }
+    },
+    "GetUserConfigResDtoRes": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "msg": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/GetUserConfigResDto"
+        }
+      }
+    },
+    "GroupDto": {
+      "type": "object",
+      "properties": {
+        "groupId": {
+          "type": "string"
+        },
+        "groupName": {
+          "type": "string"
+        },
+        "sortNo": {
+          "format": "int32",
+          "type": "integer"
+        }
+      }
+    },
+    "HomeInfoResDto": {
+      "type": "object",
+      "properties": {
+        "userSites": {
+          "description": "网址名及网线<br>Site Title follow by the links",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserSiteSiteLineApiListResponse"
+          }
+        },
+        "groups": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserSiteGroup"
+          }
+        },
+        "style": {
+          "description": "个性化颜色，初始值为蓝色<br>Saved style, default as blue ",
+          "type": "string"
+        },
+        "firstSite": {
+          "$ref": "#/definitions/UserSite"
+        }
+      }
+    },
+    "HomeInfoResDtoListRes": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "msg": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/HomeInfoResDto"
+          }
+        }
+      }
+    },
+    "LoginReqDto": {
+      "required": [
+        "captchaCode",
+        "loginName",
+        "loginPass"
+      ],
+      "type": "object",
+      "properties": {
+        "loginName": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "loginPass": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "captchaCode": {
+          "description": "验证码<br>Captcha Code",
+          "minLength": 1,
+          "type": "string"
+        }
+      }
+    },
+    "OrderDto": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "sortNo": {
+          "format": "int32",
+          "type": "integer"
+        }
+      }
+    },
+    "RegInfoResDto": {
+      "type": "object",
+      "properties": {
+        "hosts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "domain": {
+          "type": "string"
+        },
+        "userId": {
+          "type": "string"
+        }
+      }
+    },
+    "RegInfoResDtoRes": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "msg": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/RegInfoResDto"
+        }
+      }
+    },
+    "RegisterReqDto": {
+      "required": [
+        "captchaCode",
+        "loginName",
+        "loginPass"
+      ],
+      "type": "object",
+      "properties": {
+        "loginName": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "loginPass": {
+          "minLength": 1,
+          "type": "string"
+        },
+        "captchaCode": {
+          "description": "验证码<br>Captcha Code",
+          "minLength": 1,
+          "type": "string"
+        },
+        "insert": {
+          "format": "int32",
+          "type": "integer"
+        }
+      }
+    },
+    "ReplaceLineReqDto": {
+      "type": "object",
+      "properties": {
+        "lineId": {
+          "type": "string"
+        },
+        "from": {
+          "type": "string"
+        },
+        "to": {
+          "type": "string"
+        }
+      }
+    },
+    "Res": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "msg": {
+          "type": "string"
+        },
+        "data": { }
+      }
+    },
+    "SaveUserReqDto": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "loginName": {
+          "type": "string"
+        },
+        "loginDomain": {
+          "type": "string"
+        },
+        "bingDomain": {
+          "description": "Domain",
+          "type": "string"
+        },
+        "bindDomain": {
+          "description": "Base Domain",
+          "type": "string"
+        },
+        "siteCode": {
+          "type": "string"
+        },
+        "isDel": {
+          "format": "int32",
+          "description": "删除指示 用0表示否，用1表示是<br>Delete indicator. Use 0 for no, 1 for yes.",
+          "type": "integer"
+        },
+        "operation": {
+          "format": "int32",
+          "description": "操作类型<br>Operation Type",
+          "enum": [
+            "0 - add",
+            "1 - update"
+          ],
+          "type": "integer"
+        }
+      }
+    },
+    "SiteLine": {
+      "type": "object",
+      "properties": {
+        "lineID": {
+          "type": "string"
+        },
+        "siteID": {
+          "type": "string"
+        },
+        "userID": {
+          "type": "string"
+        },
+        "lineName": {
+          "type": "string"
+        },
+        "lineLink": {
+          "type": "string"
+        },
+        "sortNo": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "loginClient": {
+          "type": "string"
+        },
+        "clientCode": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "isRedirect": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "isDel": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "createTime": {
+          "format": "date-time",
+          "type": "string"
+        }
+      }
+    },
+    "SiteLineDto": {
+      "type": "object",
+      "properties": {
+        "lineID": {
+          "type": "string"
+        },
+        "lineLink": {
+          "type": "string"
+        },
+        "clientCode": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "loginClient": {
+          "type": "string"
+        },
+        "isRedirect": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "sortNo": {
+          "format": "int32",
+          "type": "integer"
+        }
+      }
+    },
+    "SiteLineDtoRes": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "msg": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/SiteLineDto"
+        }
+      }
+    },
+    "StringRes": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "msg": {
+          "type": "string"
+        },
+        "data": {
+          "type": "string"
+        }
+      }
+    },
+    "SysConfigDto": {
+      "type": "object",
+      "properties": {
+        "configName": {
+          "description": "网站名称",
+          "type": "string"
+        },
+        "bindDomain": {
+          "description": "域名绑定",
+          "type": "string"
+        },
+        "alternateDomain": {
+          "description": "备用域名",
+          "type": "string"
+        },
+        "defaultCName": {
+          "description": "域名CName",
+          "type": "string"
+        },
+        "seoDec": {
+          "type": "string"
+        },
+        "seoKey": {
+          "type": "string"
+        },
+        "cnnzHtml": {
+          "description": "统计代码",
+          "type": "string"
+        },
+        "configID": {
+          "type": "string",
+          "readOnly": true
+        }
+      }
+    },
+    "SysConfigDtoRes": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "msg": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/SysConfigDto"
+        }
+      }
+    },
+    "TokenResDto": {
+      "type": "object",
+      "properties": {
+        "loginToken": {
+          "type": "string"
+        }
+      }
+    },
+    "TokenResDtoRes": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "msg": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/TokenResDto"
+        }
+      }
+    },
+    "UpdateDomainReqDto": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "format": "int32",
+          "description": "操作类型<br>Operation Type",
+          "enum": [
+            "0 - add",
+            "1 - update"
+          ],
+          "type": "integer"
+        },
+        "siteName": {
+          "type": "string"
+        },
+        "groupId": {
+          "type": "string"
+        },
+        "siteId": {
+          "description": "此参数仅针对添加操作<br>Only Required for Add action",
+          "type": "string"
+        }
+      }
+    },
+    "UpdateGroupReqDto": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "format": "int32",
+          "description": "操作类型<br>Operation Type",
+          "enum": [
+            "0 - add",
+            "1 - update"
+          ],
+          "type": "integer"
+        },
+        "groupName": {
+          "type": "string"
+        },
+        "groupId": {
+          "description": "此参数仅针对添加操作<br>Only Required for Add action",
+          "type": "string"
+        }
+      }
+    },
+    "UpdateLineReqDto": {
+      "type": "object",
+      "properties": {
+        "operation": {
+          "format": "int32",
+          "description": "操作类型<br>Operation Type",
+          "enum": [
+            "0 - add",
+            "1 - update"
+          ],
+          "type": "integer"
+        },
+        "siteId": {
+          "type": "string"
+        },
+        "link": {
+          "type": "string"
+        },
+        "client": {
+          "type": "string"
+        },
+        "lineId": {
+          "description": "此参数仅针对添加操作<br>Only Required for Add action",
+          "type": "string"
+        },
+        "order": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "clientCode": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "isRedirect": {
+          "format": "int32",
+          "description": "转站指示 用0表示否，用1表示是<br>Is redirect indicator. Use 0 for no, 1 for yes.",
+          "type": "integer"
+        }
+      }
+    },
+    "UpdateLoginNameReqDto": {
+      "type": "object",
+      "properties": {
+        "password": {
+          "description": "需要密码<br>Password is required for changing login name",
+          "type": "string"
+        },
+        "newLoginName": {
+          "type": "string"
+        }
+      }
+    },
+    "UpdatePassReqDto": {
+      "type": "object",
+      "properties": {
+        "old": {
+          "type": "string"
+        },
+        "new": {
+          "type": "string"
+        },
+        "confirmation": {
+          "type": "string"
+        }
+      }
+    },
+    "UserDto": {
+      "type": "object",
+      "properties": {
+        "siteCode": {
+          "description": "安全码",
+          "type": "string"
+        },
+        "bingDomain": {
+          "description": "域名绑定",
+          "type": "string"
+        },
+        "safeEmail": {
+          "description": "邮箱绑定",
+          "type": "string"
+        },
+        "siteCount": {
+          "format": "int32",
+          "description": "网址个数",
+          "type": "integer"
+        },
+        "siteStyle": {
+          "description": "默认颜色",
+          "type": "string"
+        },
+        "siteLottery": {
+          "description": "默认开奖",
+          "type": "string"
+        },
+        "loginName": {
+          "description": "登陆名",
+          "type": "string",
+          "readOnly": true
+        }
+      }
+    },
+    "UserInfoDto": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "loginName": {
+          "type": "string"
+        },
+        "loginDomain": {
+          "type": "string"
+        },
+        "bingDomain": {
+          "description": "Domain",
+          "type": "string"
+        },
+        "bindDomain": {
+          "description": "Base Domain",
+          "type": "string"
+        },
+        "siteCode": {
+          "type": "string"
+        },
+        "isDel": {
+          "format": "int32",
+          "description": "删除指示 用0表示否，用1表示是<br>Delete indicator. Use 0 for no, 1 for yes.",
+          "type": "integer"
+        }
+      }
+    },
+    "UserInfoDtoListRes": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "msg": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserInfoDto"
+          }
+        }
+      }
+    },
+    "UserManageDto": {
+      "type": "object",
+      "properties": {
+        "users": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserInfoDto"
+          }
+        },
+        "total": {
+          "format": "int32",
+          "type": "integer"
+        }
+      }
+    },
+    "UserManageDtoListRes": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "msg": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserManageDto"
+          }
+        }
+      }
+    },
+    "UserSite": {
+      "type": "object",
+      "properties": {
+        "siteID": {
+          "type": "string"
+        },
+        "userID": {
+          "type": "string"
+        },
+        "groupId": {
+          "type": "string"
+        },
+        "siteName": {
+          "type": "string"
+        },
+        "siteLink": {
+          "type": "string"
+        },
+        "createTime": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "isDel": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "sortNo": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "star": {
+          "format": "int32",
+          "type": "integer"
+        }
+      }
+    },
+    "UserSiteGroup": {
+      "type": "object",
+      "properties": {
+        "groupId": {
+          "type": "string"
+        },
+        "groupName": {
+          "type": "string"
+        },
+        "userID": {
+          "type": "string"
+        },
+        "sortNo": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "isDel": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "createTime": {
+          "format": "date-time",
+          "type": "string"
+        }
+      }
+    },
+    "UserSiteSiteLineApiListResponse": {
+      "type": "object",
+      "properties": {
+        "type": {
+          "$ref": "#/definitions/UserSite"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/SiteLine"
+          }
+        }
+      }
+    },
+    "UserSitesDto": {
+      "type": "object",
+      "properties": {
+        "siteID": {
+          "type": "string"
+        },
+        "groupId": {
+          "type": "string"
+        },
+        "siteName": {
+          "type": "string"
+        },
+        "siteLink": {
+          "type": "string"
+        },
+        "createTime": {
+          "format": "date-time",
+          "type": "string"
+        },
+        "star": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "sortNo": {
+          "format": "int32",
+          "type": "integer"
+        }
+      }
+    },
+    "UserSitesDtoListRes": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "msg": {
+          "type": "string"
+        },
+        "data": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/UserSitesDto"
+          }
+        }
+      }
+    },
+    "WeatherForecast": {
+      "type": "object",
+      "properties": {
+        "date": {
+          "format": "date",
+          "type": "string"
+        },
+        "temperatureC": {
+          "format": "int32",
+          "type": "integer"
+        },
+        "temperatureF": {
+          "format": "int32",
+          "type": "integer",
+          "readOnly": true
+        },
+        "summary": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

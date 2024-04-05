@@ -1,0 +1,502 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "v1",
+    "title": "Cash User REST API Documentation",
+    "description": "# Introduction 简介 \n\nThis document targets technical developers of merchant systems, who should have a background in web programming, understanding of RESTful API, and familiarity with HTTP, HTTPS request and response formats and processes, as well as JSON format.\n\n本文档适用于商户系统的技术开发人员，要求具有WEB 程序开发背景，了解RESTful API, HTTP、HTTPS 请求和应答的格式和过程，对JSON 格式有所掌握。 \n\n # Authentication 认证 \n\nThis API uses Bearer Token for authentication. Please make sure to include the bearer token in the `Authorization` header for all requests.\n\n## Obtaining Bearer Token\n\nTo obtain the bearer token, you need to follow these steps:\n\n1. Go to our **ClientLogin** method. 通过 **ClientLogin** 登陆\n2. Sign in with your credentials using our MD5 method as follows. 登陆方式如下，签名，验签时用到的key 值均为商户密钥 \n\n```\n// 如登录接口：C#语法 \nstring key=”3fg49gh7ye5yfjwhw67efj”;//密钥 secretKey provided by us\n\n// Employing a descending secretKey.\n// 我们将采用降序的secretKey\nstring descKey = new string (key.ToLower().OrderByDescending(c => c).ToArray()); \n\n// Parameters of the query except “Sign” should pass in ascending order, example as below \n// 除了“Sign”参数之外，查询的参数应按升序传递，示例如下：\n// E.g. [I]jk[L][M]\nstring sign = MD5(“isMobile=0&loginId=cs003&merchantId=test&key=”+ descKey);//签名 sign\n\n```\n\n\n3. Upon successful authentication, you will receive the bearer token.\n\n## Using Bearer Token\n\nOnce you have obtained the bearer token, include it in the `Authorization` header of your requests as follows:\n\n```\nAuthorization: Bearer <your-access-token>\n```\n\n",
+    "x-logo": {
+      "url": "logo.png",
+      "altText": "XingHui Logo"
+    }
+  },
+  "securityDefinitions": {
+    "BearerAuth": {
+      "type": "apiKey",
+      "name": "Authorization",
+      "in": "header",
+      "description": "Enter your bearer token in the format 'Bearer {token}'"
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ],
+  "tags": [
+    {
+      "name": "BettingList",
+      "description": "About Betting List.\r\n关于注单"
+    },
+    {
+      "name": "ClientLogin",
+      "description": "Sign in with your credentials using MD5 method as follows. \n\n登陆方式如下，签名，验签时用到的key 值均为商户密钥 \n\n```\n// 如登录接口：C#语法 \nstring key=”3fg49gh7ye5yfjwhw67efj”;//密钥 secretKey provided by us\n\n// Employing a descending secretKey.\n// 我们将采用降序的secretKey\nstring descKey = new string (key.ToLower().OrderByDescending(c => c).ToArray()); \n\n// Parameters of the body except “Sign” should calculate in lowercase & ascending order, example as below \n// 除了“Sign”参数之外，查询的参数应转换为小写以及按升序计算签名，示例如下：\n// E.g. [I]jk[L][M]\nstring sign = MD5((“isMobile=0&loginId=cs003&merchantId=test&key=”).ToLower() + descKey);//签名 sign\n\n```\n**P/S: The parameters of the API are still passed via the request body, while the query string is solely used for calculating the signature.**\n\n**注意：API的参数仍然通过请求体传递，而查询字符串仅用于计算签名。**"
+    }
+  ],
+  "definitions": {
+    "Models.Member.ClientLoginDto": {
+      "properties": {
+        "isMobile": {
+          "description": "Is mobile entry\r\n手机端入口",
+          "example": "1 = Yes, 0 = No",
+          "type": "string"
+        },
+        "loginId": {
+          "description": "The unique user id\r\n玩家识别码",
+          "type": "string"
+        },
+        "merchantId": {
+          "description": "Merchant Id\r\n商号",
+          "type": "string"
+        },
+        "sign": {
+          "description": "签名",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+
+    "Models.BettingList.BetHistoryRes": {
+      "properties": {
+        "betList": {
+          "description": "BetList of the body",
+          "items": {
+            "$ref": "#/definitions/Models.BettingList.BetHistoryRes.betList"
+          },
+          "type": "array",
+          "uniqueItems": false
+        },
+        "sum": {
+          "description": "Sum of the body",
+          "items": {
+            "$ref": "#/definitions/Models.BettingList.BetHistoryRes.sum"
+          },
+          "type": "array",
+          "uniqueItems": false
+        }
+      },
+      "type": "object"
+    },
+    "Models.BettingList.BetHistoryRes.betList": {
+      "properties": {
+        "bettingAmount": {
+          "description": "betting amount\r\n投注金额",
+          "type": "string"
+        },
+        "displayName": {
+          "description": "dispaly name\r\n显示名",
+          "type": "string"
+        },
+        "records": {
+          "description": "odds\r\n赔率",
+          "type": "string"
+        },
+        "reportDate": {
+          "description": "report date\r\n报告日期",
+          "type": "string"
+        },
+        "result": {
+          "description": "result for this bet\r\n此注单结果",
+          "type": "string"
+        },
+        "returnValue": {
+          "description": "cashback amount\r\n退水金额",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "Models.BettingList.BetHistoryRes.sum": {
+      "properties": {
+        "betCount": {
+          "description": "bet count\r\n投注数",
+          "type": "string"
+        },
+        "bettingAmount": {
+          "description": "bet amount\r\n投注金额",
+          "type": "string"
+        },
+        "returnAmount": {
+          "description": "cashback amount\r\n退水金额",
+          "type": "string"
+        },
+        "totalResult": {
+          "description": "cashback total amount\r\n退水金额总金额",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "Models.BettingList.BetListRes": {
+      "properties": {
+        "betList": {
+          "description": "Bet List\r\n注单",
+          "items": {
+            "$ref": "#/definitions/Models.BettingList.BetListRes.betList"
+          },
+          "type": "array",
+          "uniqueItems": false
+        },
+        "numOfPage": {
+          "description": "total records \r\n总数据",
+          "type": "string"
+        },
+        "records": {
+          "description": "count for this query list \r\n此查询数据",
+          "type": "string"
+        },
+        "sum": {
+          "description": "total sum \r\n各总数",
+          "items": {
+            "$ref": "#/definitions/Models.BettingList.BetListRes.sum"
+          },
+          "type": "array",
+          "uniqueItems": false
+        },
+        "totalRecords": {
+          "description": "total records \r\n总数据",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "Models.BettingList.BetListRes.betList": {
+      "properties": {
+        "bettingAmount": {
+          "description": "betting amount\r\n投注金额",
+          "type": "string"
+        },
+        "createDate": {
+          "description": "create date\r\n创建日期",
+          "type": "string"
+        },
+        "deleteFlag": {
+          "description": "is deleted\r\n删除标识",
+          "example": "1 = Yes, 0 = No",
+          "type": "string"
+        },
+        "displayName": {
+          "description": "display name\r\n显示名",
+          "type": "string"
+        },
+        "installments": {
+          "description": "draw serial number\r\n期数",
+          "type": "string"
+        },
+        "lotteryName": {
+          "description": "lottery name\r\n彩种",
+          "type": "string"
+        },
+        "midType": {
+          "description": "mid type\r\n中间种类",
+          "type": "string"
+        },
+        "oddNo": {
+          "description": "odd number\r\n注单号",
+          "type": "string"
+        },
+        "odds": {
+          "description": "odds\r\n赔率",
+          "type": "string"
+        },
+        "oddsType": {
+          "description": "odds type \r\n赔率类型",
+          "type": "string"
+        },
+        "result": {
+          "description": "result for this bet\r\n此注单结果",
+          "type": "string"
+        },
+        "returnAmount": {
+          "description": "cashback amount\r\n退水金额",
+          "type": "string"
+        },
+        "returnValue": {
+          "description": "cashback value\r\n退水(%)",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    },
+    "Models.BettingList.BetListRes.sum": {
+      "properties": {
+        "bettingAmount": {
+          "description": "bet amount\r\n投注金额",
+          "type": "string"
+        },
+        "result": {
+          "description": "result\r\n注单结果",
+          "type": "string"
+        },
+        "totalBettingAmount": {
+          "description": "total result\r\n投注总数",
+          "type": "string"
+        },
+        "totalResult": {
+          "description": "total result\r\n注单总结果",
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+
+  "paths": {
+    "/api/Member/ClientLogin": {
+      "post": {
+        "consumes": ["application/json"],
+        "operationId": "ClientLogin",
+        "parameters": [
+          {
+            "in": "body",
+            "name": "logDto",
+            "required": false,
+            "schema": {
+              "$ref": "#/definitions/Models.Member.ClientLoginDto"
+            }
+          }
+        ],
+        "produces": [],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Server Error"
+          }
+        },
+        "summary": "登录 login",
+        "tags": ["ClientLogin"]
+      }
+    },
+    "/api/Member/ClientLogout": {
+      "post": {
+        "consumes": ["application/json"],
+        "operationId": "ClientLogout",
+        "parameters": [],
+        "produces": [],
+        "responses": {
+          "200": {
+            "description": "Success"
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Server Error"
+          }
+        },
+        "tags": ["Member"]
+      }
+    },
+    "/api/BettingList/BetDetail/{dDate}": {
+      "get": {
+        "consumes": ["application/json"],
+        "description": "会员日报表明细 (BetDetailJson)  \r\n Request E.g. betDetail/2024-03-08?index=1&row=15&lotteryType=",
+        "operationId": "BetDetail",
+        "parameters": [
+          {
+            "description": "**yyyy-MM-dd** \r\n For 2024 March, 08, E.g.: 2024-03-08",
+            "format": "date-time",
+            "in": "path",
+            "name": "dDate",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "description": "page \r\n 页数",
+            "format": "int32",
+            "in": "query",
+            "name": "index",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "description": "row \r\n 行数",
+            "format": "int32",
+            "in": "query",
+            "name": "row",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "default": "",
+            "description": "Lottery Type, 彩种 \r\n Leave blank for all. 放空则获取全部.",
+            "in": "query",
+            "name": "lotteryType",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/Models.BettingList.BetListRes"
+              },
+              "type": "array",
+              "uniqueItems": false
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Server Error"
+          }
+        },
+        "summary": "报表明细 Bet detail",
+        "tags": ["BettingList"]
+      }
+    },
+    "/api/BettingList/History": {
+      "get": {
+        "consumes": ["application/json"],
+        "description": "会员报表查询, 会员日报表统计 \r\n Member report query, daily member report statistics.",
+        "operationId": "History",
+        "parameters": [
+          {
+            "description": "**yyyy-MM-dd** \r\n For 2024 March, 08, E.g.: 2024-03-08",
+            "in": "query",
+            "name": "startDate",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "description": "**yyyy-MM-dd** \r\n For 2024 March, 08, E.g.: 2024-03-08",
+            "in": "query",
+            "name": "endDate",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "default": "",
+            "description": "Lottery Type, 彩种 \r\n Leave blank for all. 放空则获取全部.",
+            "in": "query",
+            "name": "lotteryType",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/Models.BettingList.BetHistoryRes"
+              },
+              "type": "array",
+              "uniqueItems": false
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Server Error"
+          }
+        },
+        "summary": "报表查询 Report query",
+        "tags": ["BettingList"]
+      }
+    },
+    "/api/BettingList/Settled": {
+      "get": {
+        "consumes": ["application/json"],
+        "description": "已结注单, 获取已结注单列表 \r\n Settled bets, get a list of settled bets.",
+        "operationId": "Settled",
+        "parameters": [
+          {
+            "description": "Index to start at",
+            "format": "int32",
+            "in": "query",
+            "name": "index",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "description": "Number of Rows",
+            "format": "int32",
+            "in": "query",
+            "name": "row",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/Models.BettingList.BetListRes"
+              },
+              "type": "array",
+              "uniqueItems": false
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Server Error"
+          }
+        },
+        "summary": "已结注单 Settled bets",
+        "tags": ["BettingList"]
+      }
+    },
+    "/api/BettingList/UnSettle": {
+      "get": {
+        "consumes": ["application/json"],
+        "description": "未结注单, 获取未结算注单列表 \r\n Unsettled bets, get a list of unsettled bets.",
+        "operationId": "UnSettle",
+        "parameters": [
+          {
+            "description": "page \r\n 页数",
+            "format": "int32",
+            "in": "query",
+            "name": "index",
+            "required": false,
+            "type": "integer"
+          },
+          {
+            "description": "row \r\n 行数",
+            "format": "int32",
+            "in": "query",
+            "name": "row",
+            "required": false,
+            "type": "integer"
+          }
+        ],
+        "produces": ["application/json"],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "schema": {
+              "items": {
+                "$ref": "#/definitions/Models.BettingList.BetListRes"
+              },
+              "type": "array",
+              "uniqueItems": false
+            }
+          },
+          "400": {
+            "description": "Bad Request"
+          },
+          "500": {
+            "description": "Server Error"
+          }
+        },
+        "summary": "未结注单 Unsettled bets",
+        "tags": ["BettingList"]
+      }
+    }
+  }
+}
