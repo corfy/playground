@@ -227,9 +227,9 @@ export default function Home() {
                         
                         <input
                         id={`${invPre}${invIndex}`}
-                         type="checkbox" checked={inv[`${invPre}${invIndex}`]>0} 
+                         type="checkbox" checked={Number(inv[`${invPre}${invIndex}`])>0} 
                           value={inv.value}
-                          onChange={(e: ChangeEvent<HTMLInputElement>) => handleCheckboxChange(personIndex, itemIndex, inv[`${invPre}${invIndex}`]>0 ? 0 : 1, invIndex)}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => handleCheckboxChange(personIndex, itemIndex, Number(inv[`${invPre}${invIndex}`])>0 ? 0 : 1, invIndex)}
                          ></input>
                          <label htmlFor={`${invPre}${invIndex}`} className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">{persons[invIndex].name || invIndex +1}</label>
                     </div>))
