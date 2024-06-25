@@ -1,3 +1,15 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&family=Tiny5&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+@layer base {
+    input {
+      @apply border rounded-md px-2 border-gray-300 focus:border-blue-500 focus:ring-blue-500 focus:outline-none focus:ring-1;
+    }
+    body {
+        @apply font-sans;
+      }
+  }

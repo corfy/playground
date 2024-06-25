@@ -8,6 +8,9 @@ module.exports = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['Exo 2', 'sans-serif'],
+      },
       colors: {
       'seafoam-green': '#66A5AD',
       'seafoam-blue': '#C4DFE6',

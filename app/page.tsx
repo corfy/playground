@@ -1,127 +1,277 @@
-import Image from "next/image";
-import ThemeSwitch from "@/components/theme-switch";
-import { generalData } from "@/data/general";
-import { contentData } from "@/data/content";
-import type { Content } from "@/data/content";
+"use client";
+import { useState, ChangeEvent, FormEvent } from 'react';
+import { array } from 'zod';
 
-type ContentProps = Content;
+type RepProperties = {
+    [key: string]: number | string; // added index signature
+  };
 
-const Content: React.FC<ContentProps> = ({ title, items }) => {
+
+interface Item{
+  name: string;
+  price: number;
+  Invs: RepProperties[];
+}
+
+
+interface Person {
+  name: string;
+  items: Item[];
+  total?: RepProperties[];
+}
+
+export default function Home() {
+  const [persons, setPersons] = useState<Person[]>([]);
+  const [targetPerson, setTargetPerson] = useState(0);
+  const invPre = "inv";
+
+
+  const handlePersonNameChange = (index: number, value: string) => {
+    const newPersons = [...persons];
+    newPersons[index].name = value;
+    setPersons(newPersons);
+  };
+
+  const handleItemChange = (personIndex: number, itemIndex: number, field: 'name' | 'price', value: string | number) => {
+    const newPersons = [...persons];
+    if (field === 'price') {
+      newPersons[personIndex].items[itemIndex][field] = Number(value);
+      let amdInvs = [...newPersons[personIndex].items[itemIndex]?.Invs];
+      //update individual price
+      const totalInv = amdInvs.filter((inv, ind) => inv[`${invPre}${ind}`] != 0);
+      newPersons[personIndex].items[itemIndex].Invs = handlePrice(Number(value), totalInv.length, amdInvs);
+    } else {
+      newPersons[personIndex].items[itemIndex][field] = value as string;
+    }
+    setPersons(newPersons);
+  };
+
+  const handleCheckboxChange = (personIndex: number, itemIndex: number, newvalue: number, invIndex: number) => {
+    const amdPersons = [...persons];
+    let amdInvs = [...amdPersons[personIndex].items[itemIndex]?.Invs];
+     // Total involve other than this checkbox
+     const totalInv = amdInvs.filter((inv, ind) => ind != invIndex && inv[`${invPre}${ind}`] != 0);
+    let invCount = totalInv.length;
+    if (Number(newvalue) == 1){
+        invCount++;    
+    } 
+    const newprice = amdPersons[personIndex].items[itemIndex].price != 0 ?  amdPersons[personIndex].items[itemIndex].price / invCount : 0;
+    if (newprice == 0) {
+        const inv = `${invPre}${invIndex}`;
+        amdInvs[invIndex] = { [inv] : Number(newvalue) == 1 ? Number(newvalue) + 0.111 : 0};
+        amdPersons[personIndex].items[itemIndex].Invs = amdInvs;    
+    } else {
+        const newInvs:RepProperties[] = amdInvs.map((n,i) => {
+            const inv = `${invPre}${i}`;
+    
+         
+            if (Number(newvalue) == 0) {
+                if (i == invIndex)
+                n =  { [inv] :0  };
+                else
+                n = { [inv] :newprice.toFixed(2)  };
+            } else {
+                  n =  { [inv] :newprice.toFixed(2)  };
+            }
+           
+    
+            return n;
+        });
+        amdInvs = newInvs;
+    }
+     
+    amdPersons[personIndex].items[itemIndex].Invs = amdInvs;
+   
+    setPersons(amdPersons);
+  };
+
+  const handlePrice = (value: number, invCount:number, amdInvs: RepProperties[]) => {
+    const newprice = value != 0 ?  value / invCount : 0;
+    if (newprice != 0) {
+        const newInvs:RepProperties[] = amdInvs.map((n,i) => {
+        const inv = `${invPre}${i}`;
+        if (n[inv] != 0)
+          return { [inv] :newprice.toFixed(2)  };
+          else return { [inv] : 0  };
+        });
+        amdInvs = newInvs;
+    }
+    console.log(newprice, invCount);
+    return amdInvs;
+  };
+
+  const addPerson = () => {
+    if (targetPerson > 0) {
+        const newPersons = [];
+        for (let i = 0; i < targetPerson; i++) {
+          newPersons.push({ name: '', items: [getSub()] });
+        }
+                //console.log(newPersons);
+                setPersons(newPersons);
+        //setPersons([...persons, { name: '', items: [{ name: '', price: 0 }] }]);
+
+    }
+  };
+
+  const getSub = () => {
+    const newSub: Item = { name: '', price: 0, Invs: [] } ;
+    for (let i = 0; i < targetPerson; i++) {
+        const inv = `${invPre}${i}`;
+        const field = inv as keyof RepProperties;
+        if (newSub.Invs) { // check if Invs is not undefined
+            newSub.Invs.push({ [field]: 1.111 });
+        }
+    }
+    return newSub;
+  };
+
+  //const removePerson = () => {
+    //if (persons.length > 0) {
+        //setPersons(persons.slice(0, -1));
+   //}
+  //};
+
+  const addItem = (personIndex: number) => {
+    const newPersons = [...persons];
+    newPersons[personIndex].items.push(getSub());
+    setPersons(newPersons);
+  };
+
+  const removeItem = (personIndex: number) => {
+    const newPersons = [...persons];
+    if (newPersons[personIndex].items.length > 1) {
+      newPersons[personIndex].items.pop();
+    }
+    setPersons(newPersons);
+  };
+
+  const calculateTotalPrice = (person: Person) => {
+    return person.items.reduce((total, item) => total + item.price, 0);
+  };
+
+  const calculateEachPay = (curPerInd: number, curPayToInd:number) => {
+
+ 
+      let sumup = 0;
+      
+      persons[curPayToInd].items.filter((item) => {
+            const invKey = `inv${curPerInd}`; // dynamically create the key
+            if(Number(item.Invs[curPerInd][invKey]) !=1.111)
+            sumup = sumup + Number(item.Invs[curPerInd][invKey]);
+      });
+
+
+    //console.log('cur per total: ' + curPerTotal + 'total price' + totalPrice);
+
+    return sumup.toFixed(2) ;  
+  };
+
+
+
+  const handleSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    // Optional: Handle form submission if needed
+  };
+
+ 
+
+  const colorCode = ['bg-rose-400', 'bg-orange-400' , 'bg-emerald-500' , 'bg-cyan-500', 'bg-indigo-500', 'bg-orange-500', 'bg-amber-400', 'bg-sky-900', 'bg-amber-200', 'bg-teal-100','bg-blue-200','bg-fuchsia-300','bg-rose-200   '];
+  const btnstyle1 = "font-bold m-1 inline-block rounded bg-neutral-300 px-3 py-1 text-xs font-medium uppercase leading-normal text-neutral-600 shadow-light-3 transition duration-150 ease-in-out hover:bg-neutral-200 hover:shadow-light-2 focus:bg-neutral-200 focus:shadow-light-2 focus:outline-none focus:ring-0 active:bg-neutral-200 active:shadow-light-2 motion-reduce:transition-none dark:shadow-black/30 dark:hover:shadow-dark-strong dark:focus:shadow-dark-strong dark:active:shadow-dark-strong";
+  const btnstyle2 = "font-bold m-1 inline-block rounded bg-neutral-800 px-3 py-1 text-xs font-medium uppercase leading-normal text-neutral-50 shadow-dark-3 transition duration-150 ease-in-out hover:bg-neutral-700 hover:shadow-dark-2 focus:bg-neutral-700 focus:shadow-dark-2 focus:outline-none focus:ring-0 active:bg-neutral-900 active:shadow-dark-2 motion-reduce:transition-none dark:shadow-black/30 dark:hover:shadow-dark-strong dark:focus:shadow-dark-strong dark:active:shadow-dark-strong";
   return (
     <>
-    <section className="my-14 text-sm">
-      <h3 className="mb-6">{title}</h3>
-      <div className="flex flex-col gap-6">
-        {items.map((item, index) => {
-          return (
-            <div className="flex" key={index}>
-              <div className="mr-8 max-w-[100px] w-full text-slate-400 dark:text-slate-400">
-                {item.date}
-              </div>
-              <div className="flex flex-col flex-1">
-                <h4>{item.title}</h4>
-                <p className="text-slate-600 dark:text-gray-400">
-                  {item.subTitle}
-                </p>
-                {item.description ? (
-                  <p className="text-slate-600 dark:text-gray-400 mt-2">
-                    {item.description}
-                  </p>
-                ) : null}
-              </div>
+    <main className=" max-w-fit mx-auto px-6 py-12 overflow-y-auto relative">
+    <div style={{ fontFamily: 'Exo 2, sans-serif' }}>
+      <h1 className="text-4xl font-bold dark:text-white py-2">Expenses Calculator</h1>
+      <form onSubmit={handleSubmit}>
+        {persons.map((person, personIndex) => (
+            <div key={personIndex} >
+          <div style={{ marginBottom: '20px' }}>
+            <div className={`shadow-md rounded-md ${personIndex > colorCode.length ? 'bg-white' :colorCode[personIndex]} p-1 border-y-gray-800 text-white`}>
+                <label className='font-bold mx-1'>{personIndex+1}.  Person Name:</label>
+                <input
+                className='text-black'
+                type="text"
+                value={person.name}
+                onChange={(e: ChangeEvent<HTMLInputElement>) => handlePersonNameChange(personIndex, e.target.value)}
+                placeholder="Name"
+                required
+                />
             </div>
-          );
-        })}
-      </div>
-    </section>
-    </>
-  );
-};
-
-export default function Page() {
-  return (
-    <>
-      <main className="max-w-xl mx-auto px-6 py-20 relative min-h-screen font-light">
-        <section className="flex items-center">
-          <Image
-            alt="Author"
-            src={generalData.avatar}
-            width={80}
-            height={80}
-            className="rounded-full object-cover"
-          />
-          <div className="ml-4">
-            <h1 className="mb-0.5 text-xl text-slate-900 dark:text-slate-100">
-              {generalData.name}
-            </h1>
-            <p className="text-slate-600 dark:text-slate-300 text-sm">
-              {generalData.jobTitle}
-            </p>
-            {generalData.website ? (
-              <span className="text-sm text-slate-400 dark:text-slate-400">
-                <a
-                  href={generalData.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="hover:underline"
-                >
-                  {generalData.website
-                    .replace(/(^\w+:|^)\/\//, "")
-                    .replace("www.", "")}
-                </a>
-              </span>
-            ) : null}
-          </div>
-        </section>
-        <section className="my-9 text-sm">
-          <h3 className="mb-1 text-slate-900 dark:text-slate-100">About</h3>
-          <div className="text-slate-600 dark:text-slate-300">
-            <p>{generalData.about}</p>
-          </div>
-        </section>
-        {contentData.map((content, index) => {
-          return <Content {...content} key={index} />;
-        })}
-        <section className="my-14 text-sm">
-          <h3 className="mb-6 text-slate-900">Contact</h3>
-          <div className="flex flex-col gap-6">
-            {generalData.contacts.map((contact, index) => {
-              return (
-                <div className="flex" key={index}>
-                  <div className="mr-8 max-w-[100px] w-full text-slate-400 dark:text-slate-400">
-                    {contact.label}
-                  </div>
-                  <div className="flex flex-col flex-1 text-slate-900 dark:text-slate-100">
-                    <a
-                      href={contact.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="hover:underline inline-flex"
-                    >
-                      {contact.value}
-                      <svg
-                        width="12"
-                        height="12"
-                        viewBox="0 0 12 12"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M3.5 3C3.22386 3 3 3.22386 3 3.5C3 3.77614 3.22386 4 3.5 4V3ZM8.5 3.5H9C9 3.22386 8.77614 3 8.5 3V3.5ZM8 8.5C8 8.77614 8.22386 9 8.5 9C8.77614 9 9 8.77614 9 8.5H8ZM2.64645 8.64645C2.45118 8.84171 2.45118 9.15829 2.64645 9.35355C2.84171 9.54882 3.15829 9.54882 3.35355 9.35355L2.64645 8.64645ZM3.5 4H8.5V3H3.5V4ZM8 3.5V8.5H9V3.5H8ZM8.14645 3.14645L2.64645 8.64645L3.35355 9.35355L8.85355 3.85355L8.14645 3.14645Z"
-                          className="fill-current text-slate-900 dark:text-slate-100"
-                        ></path>
-                      </svg>
-                    </a>
-                  </div>
+            <div className='mx-2 border-2 rounded-b-md dark:bg-black bg-slate-100'>
+            {person.items.map((item, itemIndex) => (
+                <div key={itemIndex}
+                className='my-1'>
+              <div >
+                <label className='mx-1'>Item:</label>
+                <input
+                  type="text"
+                  value={item.name}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleItemChange(personIndex, itemIndex, 'name', e.target.value)}
+                  placeholder="Item name"
+                  required
+                />
+                <label className='mx-1'>Price:</label>
+                <input
+                  type="number"
+                  value={item.price}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => handleItemChange(personIndex, itemIndex, 'price', e.target.value)}
+                  placeholder="Price"
+                  required
+                />
+              </div>
+              <div className="flex space-x-2 px-2">
+                <p>Involved:</p>
+                {
+                    item.Invs?.map((inv, invIndex) => (<div key={`inv${invIndex}`} >
+                        
+                        <input
+                        id={`${invPre}${invIndex}`}
+                         type="checkbox" checked={inv[`${invPre}${invIndex}`]>0} 
+                          value={inv.value}
+                          onChange={(e: ChangeEvent<HTMLInputElement>) => handleCheckboxChange(personIndex, itemIndex, inv[`${invPre}${invIndex}`]>0 ? 0 : 1, invIndex)}
+                         ></input>
+                         <label htmlFor={`${invPre}${invIndex}`} className="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">{persons[invIndex].name || invIndex +1}</label>
+                    </div>))
+                }
                 </div>
-              );
-            })}
+              </div>
+            ))}
+
+            
+            <button className={btnstyle1} type="button" onClick={() => addItem(personIndex)}>Add Item</button>
+            <button className={btnstyle1} type="button" onClick={() => removeItem(personIndex)}>Remove Item</button>
+            <div className="flex space-x-2 px-1">
+            {
+                    Array.from({ length: targetPerson }, (_, index) => (<div className={personIndex === index ? 'text-gray-500' : 'dark:text-white text-gray-800'}>
+                        <p>Pay to <b  >
+                            {persons[index].name || "person"}</b> {index + 1} : 
+                            <div className={`px-1 rounded-md ${index > colorCode.length  ||personIndex === index ? '' :colorCode[index]}`} key={`cal${index}`}>
+                            {calculateEachPay(personIndex, index)}
+                            </div> 
+                            </p>
+                            </div>))
+            }
+            </div>
+            <p>Total Price: {calculateTotalPrice(person)}</p>
+            </div>
+     
           </div>
-        </section>
-        <div className="px-6 absolute left-0 bottom-6">
-          <ThemeSwitch />
-        </div>
-      </main>
+        
+          </div>
+        ))}
+        <input
+              type="number"
+              value={targetPerson}
+            onChange={(e) => setTargetPerson(Number(e.target.value))}
+            placeholder="targetperson"
+            required
+        />
+        <button className={btnstyle2} type="button" onClick={addPerson}>Add Person Involve</button>
+        
+      </form>
+    </div>
+    </main>
     </>
   );
 }
