@@ -12,28 +12,33 @@
     "@emotion/react": "^11.11.4",
     "@emotion/styled": "^11.11.0",
     "@mui/material": "^5.15.11",
+    "@nextui-org/button": "^2.0.34",
+    "@nextui-org/react": "^2.4.2",
+    "@nextui-org/system": "^2.2.2",
+    "@nextui-org/theme": "^2.2.6",
     "@types/node": "20.2.4",
     "@types/react": "18.2.7",
     "@types/react-dom": "18.2.4",
     "@wits/next-themes": "^0.2.16",
-    "autoprefixer": "10.4.14",
     "body-parser": "^1.20.2",
     "compass-mixins": "^0.12.12",
     "eslint": "8.41.0",
     "eslint-config-next": "13.4.4",
-    "next": "13.4.4",
+    "framer-motion": "^11.2.12",
+    "next": "^14.2.4",
     "next-connect": "^1.0.0",
     "next-themes": "npm:@wits/next-themes@^0.2.16",
-    "postcss": "8.4.23",
     "react": "18.2.0",
     "react-dom": "18.2.0",
     "react-icons": "^5.0.1",
     "react-scroll-parallax": "^3.4.5",
     "sass": "^1.71.1",
-    "tailwindcss": "3.3.2",
     "typescript": "5.0.4"
   },
   "devDependencies": {
-    "@types/body-parser": "^1.19.5"
+    "@types/body-parser": "^1.19.5",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "tailwindcss": "^3.4.4"
   }
 }

@@ -10,7 +10,7 @@ export const menuData = [
     },
     {   
       id: 3,
-      link: "test",
+      link: "expenses",
     },
     {
       id: 4,

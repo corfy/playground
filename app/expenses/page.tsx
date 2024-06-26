@@ -178,13 +178,17 @@ export default function Home() {
     if (curPerInd != curPayToInd) {
     persons[curPerInd]?.items.filter((item) => {
       const invKey = `inv${curPayToInd}`; // dynamically create the key
-      if (Number(item.Invs[curPayToInd][invKey]) != 1.111)
+      if (item?.Invs[curPayToInd]?.[invKey]) {
+      if (Number(item?.Invs[curPayToInd]?.[invKey]) != 1.111)
       curPerSum = curPerSum + Number(item.Invs[curPayToInd][invKey]);
+      }
     });
     persons[curPayToInd]?.items.filter((item) => {
       const invKey = `inv${curPerInd}`; // dynamically create the key
-      if (Number(item.Invs[curPerInd][invKey]) != 1.111)
+      if (item?.Invs[curPayToInd]?.[invKey]) {
+      if (Number(item?.Invs[curPerInd]?.[invKey]) != 1.111)
         sumup = sumup + Number(item.Invs[curPerInd][invKey]);
+      }
     });
 
     //console.log('cur per total: ' + curPerTotal + 'total price' + totalPrice);
