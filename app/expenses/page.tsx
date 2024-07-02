@@ -1,8 +1,13 @@
 "use client";
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState, ChangeEvent, FormEvent, useRef } from "react";
 import { Button } from "@nextui-org/button";
 import { Input, Checkbox, Spacer, Card } from "@nextui-org/react";
 import { FaPlusCircle, FaMinusCircle, FaLemon } from "react-icons/fa";
+import {
+  BsBrightnessHighFill,
+  BsBrightnessAltHighFill,
+  BsPersonSlash,
+} from "react-icons/bs";
 
 type RepProperties = {
   [key: string]: number | string; // added index signature
@@ -18,17 +23,37 @@ interface Person {
   name: string;
   items: Item[];
   total?: RepProperties[];
+  hide: boolean;
 }
 
 export default function Home() {
   const [persons, setPersons] = useState<Person[]>([]);
   const [targetPerson, setTargetPerson] = useState(0);
+  const [visibility, setVisibility] = useState<boolean>(false);
   const invPre = "inv";
 
   const handlePersonNameChange = (index: number, value: string) => {
     const newPersons = [...persons];
     newPersons[index].name = value;
     setPersons(newPersons);
+  };
+
+  const handleHideChange = (index: number) => {
+    const newPersons = [...persons];
+    newPersons[index].hide = !newPersons[index].hide;
+    setPersons(newPersons);
+  };
+
+  const toggleItemVisibility = () => {
+    setVisibility((prevVisibility) => {
+      const newVisibility = !prevVisibility;
+      const newPersons: Person[] = persons.map((person) => ({
+        ...person,
+        hide: newVisibility,
+      }));
+      setPersons(newPersons);
+      return newVisibility;
+    });
   };
 
   const handleItemChange = (
@@ -88,9 +113,8 @@ export default function Home() {
 
         if (Number(newvalue) == 0) {
           if (i == invIndex) n = { [inv]: 0 };
-          else if(n[inv] != 0 && n[inv] != 0.111)
+          else if (n[inv] != 0 && n[inv] != 0.111)
             n = { [inv]: newprice.toFixed(2) };
-          
         } else {
           n = { [inv]: newprice.toFixed(2) };
         }
@@ -127,7 +151,7 @@ export default function Home() {
     if (targetPerson > 0) {
       const newPersons = [];
       for (let i = 0; i < targetPerson; i++) {
-        newPersons.push({ name: "", items: [getSub()] });
+        newPersons.push({ name: "", hide: false, items: [getSub()] });
       }
       //console.log(newPersons);
       setPersons(newPersons);
@@ -176,26 +200,21 @@ export default function Home() {
     let sumup = 0;
     let curPerSum = 0;
     if (curPerInd != curPayToInd) {
-    persons[curPerInd]?.items.filter((item) => {
-      const invKey = `inv${curPayToInd}`; // dynamically create the key
-      if (item?.Invs[curPayToInd]?.[invKey]) {
-      if (Number(item?.Invs[curPayToInd]?.[invKey]) != 1.111)
-      curPerSum = curPerSum + Number(item.Invs[curPayToInd][invKey]);
-      }
-    });
-    persons[curPayToInd]?.items.filter((item) => {
-      const invKey = `inv${curPerInd}`; // dynamically create the key
-      if (item?.Invs[curPayToInd]?.[invKey]) {
-      if (Number(item?.Invs[curPerInd]?.[invKey]) != 1.111)
-        sumup = sumup + Number(item.Invs[curPerInd][invKey]);
-      }
-    });
+      persons[curPerInd]?.items.filter((item) => {
+        const invKey = `inv${curPayToInd}`; // dynamically create the key
+        if (Number(item.Invs[curPayToInd]?.[invKey]) != 1.111)
+          curPerSum = curPerSum + Number(item.Invs[curPayToInd]?.[invKey] || 0);
+      });
+      persons[curPayToInd]?.items.filter((item) => {
+        const invKey = `inv${curPerInd}`; // dynamically create the key
+        if (Number(item.Invs[curPerInd]?.[invKey]) != 1.111)
+          sumup = sumup + Number(item.Invs[curPerInd]?.[invKey] || 0);
+      });
 
-    //console.log('cur per total: ' + curPerTotal + 'total price' + totalPrice);
-    const test = curPerSum < sumup ? sumup - curPerSum : 0;
-    return test.toFixed(2);
-  } else
-  return sumup.toFixed(2);
+      //console.log('cur per total: ' + curPerTotal + 'total price' + totalPrice);
+      const test = curPerSum < sumup ? sumup - curPerSum : 0;
+      return test.toFixed(2);
+    } else return sumup.toFixed(2);
   };
 
   const handleSubmit = (event: FormEvent) => {
@@ -210,7 +229,7 @@ export default function Home() {
     "bg-slate-600",
     "bg-cyan-500",
     "bg-indigo-500",
-"bg-orange-400",
+    "bg-orange-400",
     "bg-amber-400",
     "bg-sky-900",
     "bg-amber-200",
@@ -219,8 +238,8 @@ export default function Home() {
     "bg-fuchsia-300",
     "bg-rose-200   ",
   ];
-   const btnstyle2 =
-    "font-bold m-1 inline-block rounded bg-neutral-800 px-3 py-1 text-xs font-medium uppercase leading-normal text-neutral-50 shadow-dark-3 transition duration-150 ease-in-out hover:bg-neutral-700 hover:shadow-dark-2 focus:bg-neutral-700 focus:shadow-dark-2 focus:outline-none focus:ring-0 active:bg-neutral-900 active:shadow-dark-2 motion-reduce:transition-none dark:shadow-black/30 dark:hover:shadow-dark-strong dark:focus:shadow-dark-strong dark:active:shadow-dark-strong";
+  const btnstyle2 =
+    "font-bold m-1 inline-block rounded bg-neutral-800 px-2 py-1 text-xs font-medium uppercase leading-normal text-neutral-50 shadow-dark-3 transition duration-150 ease-in-out hover:bg-neutral-700 hover:shadow-dark-2 focus:bg-neutral-700 focus:shadow-dark-2 focus:outline-none focus:ring-0 active:bg-neutral-900 active:shadow-dark-2 motion-reduce:transition-none dark:shadow-black/30 dark:hover:shadow-dark-strong dark:focus:shadow-dark-strong dark:active:shadow-dark-strong";
   return (
     <>
       <main className="max-w-fit min-h-screen mx-auto px-6 py-12 overflow-y-auto relative">
@@ -228,207 +247,258 @@ export default function Home() {
           <h1 className="text-4xl font-bold dark:text-white py-2">
             Expenses Calculator
           </h1>
-          <form onSubmit={handleSubmit} className="flex flex-row space-x-2 p-2">
-            {persons.map((person, personIndex) => (
-              <div key={`pi_${personIndex}`} className="">
-          
-                  <Card
-                    className={`flex mb-3 shadow-md rounded-md ${
-                      personIndex > colorCode.length
-                        ? "bg-white"
-                        : colorCode[personIndex]
-                    } p-1 border-y-gray-800 text-white`}
-                  >
-                    
-                    <Input
-                      size="sm"
-                      className="text-black mt-1"
-                      type="text"
-                      value={person.name}
-                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                        handlePersonNameChange(personIndex, e.target.value)
-                      }
-                      placeholder="Person Name"
-                      endContent={
-                        <div className="pointer-events-none flex items-center">
-                          <span className="text-default-400 text-small">
-                          ${calculateTotalPrice(person)}</span>
-                        </div>
-                      }
-                      startContent={
-                        <div className="pointer-events-none flex items-center">
-                          <span className="text-default-400 text-small">
-                           {personIndex + 1}. 
-                          </span>
-                        </div>
-                      }
-                      required
-                    />
-                  
-                  <div className="mx-1 mb-1 rounded-b-md dark:bg-black bg-white">
-                    {person.items.map((item, itemIndex) => (
-                      <div key={`it_${itemIndex}`} className="my-1">
-                        <div className="flex space-x-1 px-2">
-                         
-                          <Input
-                            label="Item Name"
-                            labelPlacement="outside"
-                            size="sm"
-                            type="text"
-                            value={item.name}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                              handleItemChange(
-                                personIndex,
-                                itemIndex,
-                                "name",
-                                e.target.value
-                              )
-                            }
-                            placeholder="Item name"
-                            required
-                          />
-                          <Input
-                            label="Price"
-                            type="number"
-                            required
-                            placeholder="0.00"
-                            labelPlacement="outside"
-                            value={item.price.toString()}
-                            onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                              handleItemChange(
-                                personIndex,
-                                itemIndex,
-                                "price",
-                                e.target.value
-                              )
-                            }
-                            size="sm"
-                            startContent={
-                              <div className="pointer-events-none flex items-center">
-                                <span className="text-default-400 text-small">
-                                  $
-                                </span>
-                              </div>
-                            }
-                          />
-                        </div>
-                        <div className="flex space-x-2 px-2">
-                         
-                          {item.Invs?.map((inv, invIndex) => (
-                            <div key={`inv${invIndex}`}>
-                              <Checkbox
-                                id={`${invPre}${invIndex}`}
-                                type="checkbox"
-                                size="sm"
-                                color="warning"
-                                icon={<FaLemon/>}
-                                defaultSelected={Number(inv[`${invPre}${invIndex}`]) > 0}
-                                isSelected={
-                                  Number(inv[`${invPre}${invIndex}`]) > 0
-                                }
-                            
-                                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                                  handleCheckboxChange(
-                                    personIndex,
-                                    itemIndex,
-                                    Number(inv[`${invPre}${invIndex}`]) > 0
-                                      ? 0
-                                      : 1,
-                                    invIndex
-                                  )
-                                }
-                              >
-                                {persons[invIndex].name || invIndex + 1}
-                              </Checkbox>
-                              
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    ))}
-
-                    <div className="mx-2  space-x-1">
-                      <Button
-                        isIconOnly
-                        size="sm"
-                        color="primary"
-                        aria-label="Add Item"
-                        onClick={() => addItem(personIndex)}
-                      >
-                        <FaPlusCircle />
-                      </Button>
-                      <Button
-                        isIconOnly
-                        color="danger"
-                        size="sm"
-                        variant="bordered"
-                        aria-label="Remove Item"
-                        onClick={() => removeItem(personIndex)}
-                      >
-                        <FaMinusCircle />
-                      </Button>
-                    </div>
-                    <div className="flex space-x-2 p-2">
-                      {Array.from({ length: targetPerson }, (_, index) => (
-                       <div
-                       key={`payto_${index}`}>
-                        <div
-                         
-                          className={
-                            personIndex === index
-                              ? "text-gray-500"
-                              : "dark:text-white text-gray-800"
-                          }
-                        >
-                          <div className="text-small text-gray-200 ">
-                         
-                            
-                            <div
-                              className={`px-1 rounded-md ${
-                                index > colorCode.length ||
-                                personIndex === index
-                                  ? "bg-gray-200"
-                                  : colorCode[index]
-                              }`}
-                              key={`cal${index}`}
-                            >
-                             Pay <b className="text-white">${calculateEachPay(personIndex, index)}</b> to  
-                             {` `}
-                             {persons[index]?.name || index + 1} 
-                            </div>
-                          </div>
-                        </div>
-                        <Spacer x={4} /></div>
-                      ))}
-                    </div>
-                   
-                  </div>
-                  </Card>
-       
-              </div>
-            ))}
-           
-          </form>
-          <div className="mx-auto max-w-80 px-5 float-left flex-row">
-          <Input
+          <div className="flex flex-row space-x-2 max-w-fit pb-2">
+            <Input
               type="number"
               size="sm"
-              
               value={targetPerson.toString()}
-              onChange={(e) => 
-                {
-                  
-                  setTargetPerson(Number(e.target.value))
-                  addPerson
-                }}
+              onChange={(e) => {
+                setTargetPerson(Number(e.target.value));
+                addPerson;
+              }}
               placeholder="target person"
               required
             />
-            <Button size="sm" className={btnstyle2} type="button" onClick={addPerson}>
-              Add Person Involve
+            {persons.length == 0 ? (
+              <Button
+                fullWidth={true}
+                size="sm"
+                color="primary"
+                variant="flat"
+                type="button"
+                onClick={addPerson}
+              >
+                {persons.length > 0 ? "Update" : "Add"} Person Involve
+              </Button>
+            ) : (
+              <Button
+                fullWidth={true}
+                size="sm"
+                color="primary"
+                variant="flat"
+                type="button"
+                onClick={() => {
+                  setPersons([]);
+                  setTargetPerson(0);
+                }}
+              >
+                Start Over
+              </Button>
+            )}
+
+            <Button
+              fullWidth={true}
+              size="sm"
+              color="primary"
+              variant="bordered"
+              type="button"
+              onClick={toggleItemVisibility}
+            >
+              Toggle Items Visibility
             </Button>
           </div>
-         
+          <form
+            onSubmit={handleSubmit}
+            className=" mx-auto grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2"
+          >
+            {persons.map((person, personIndex) => (
+              <div key={`pi_${personIndex}`}>
+                <Card
+                  className={`flex mb-3 shadow-md rounded-md ${
+                    personIndex > colorCode.length
+                      ? "bg-white"
+                      : colorCode[personIndex]
+                  } p-1 border-y-gray-800 text-white`}
+                >
+                  <Input
+                    size="sm"
+                    className="text-black mt-1"
+                    type="text"
+                    value={person.name}
+                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                      handlePersonNameChange(personIndex, e.target.value)
+                    }
+                    placeholder="Person Name"
+                    endContent={
+                      <div className="pointer-events-none flex items-center">
+                        <span className="text-default-400 text-small">
+                          ${calculateTotalPrice(person)}
+                        </span>
+                      </div>
+                    }
+                    startContent={
+                      <div className="pointer-events-none flex items-center">
+                        <span className="text-default-400 text-small">
+                          {personIndex + 1}.
+                        </span>
+                      </div>
+                    }
+                    required
+                  />
+
+                  <div className="mx-1 mb-1 rounded-b-md dark:bg-black bg-white  overflow-y-auto">
+                    <Button
+                      size="sm"
+                      className="text-xl text-amber-500 absolute top-8 right-1 shadow-lg"
+                      onClick={() => handleHideChange(personIndex)}
+                      color="warning"
+                      isIconOnly
+                      variant="flat"
+                      aria-label="Open"
+                    >
+                      {person.hide ? (
+                        <BsBrightnessHighFill className="motion-safe:animate-ping motion-reduce:transition duration-500" />
+                      ) : (
+                        <BsBrightnessAltHighFill />
+                      )}
+                    </Button>
+                    <div
+                      className={`transition-height ${
+                        person.hide ? "hidden" : ""
+                      }`}
+                    >
+                      {person.items.map((item, itemIndex) => (
+                        <div key={`it_${itemIndex}`} className="my-1">
+                          <div className="flex space-x-1 px-2">
+                            <Input
+                              label="Item Name"
+                              labelPlacement="outside"
+                              size="sm"
+                              type="text"
+                              value={item.name}
+                              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                handleItemChange(
+                                  personIndex,
+                                  itemIndex,
+                                  "name",
+                                  e.target.value
+                                )
+                              }
+                              placeholder="Item name"
+                              required
+                            />
+                            <Input
+                              label="Price"
+                              type="number"
+                              required
+                              placeholder="0.00"
+                              labelPlacement="outside"
+                              value={item.price.toString()}
+                              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                handleItemChange(
+                                  personIndex,
+                                  itemIndex,
+                                  "price",
+                                  e.target.value
+                                )
+                              }
+                              size="sm"
+                              startContent={
+                                <div className="pointer-events-none flex items-center">
+                                  <span className="text-default-400 text-small">
+                                    $
+                                  </span>
+                                </div>
+                              }
+                            />
+                          </div>
+                          <div className="flex space-x-2 px-2">
+                            {item.Invs?.map((inv, invIndex) => (
+                              <div key={`inv${invIndex}`}>
+                                <Checkbox
+                                  id={`${invPre}${invIndex}`}
+                                  type="checkbox"
+                                  size="sm"
+                                  color="warning"
+                                  icon={<FaLemon />}
+                                  defaultSelected={
+                                    Number(inv[`${invPre}${invIndex}`]) > 0
+                                  }
+                                  isSelected={
+                                    Number(inv[`${invPre}${invIndex}`]) > 0
+                                  }
+                                  onChange={(
+                                    e: ChangeEvent<HTMLInputElement>
+                                  ) =>
+                                    handleCheckboxChange(
+                                      personIndex,
+                                      itemIndex,
+                                      Number(inv[`${invPre}${invIndex}`]) > 0
+                                        ? 0
+                                        : 1,
+                                      invIndex
+                                    )
+                                  }
+                                >
+                                  {persons[invIndex].name || invIndex + 1}
+                                </Checkbox>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+
+                      <div className="mx-2  space-x-1">
+                        <Button
+                          isIconOnly
+                          size="sm"
+                          color="primary"
+                          aria-label="Add Item"
+                          onClick={() => addItem(personIndex)}
+                        >
+                          <FaPlusCircle />
+                        </Button>
+                        <Button
+                          isIconOnly
+                          color="danger"
+                          size="sm"
+                          variant="bordered"
+                          aria-label="Remove Item"
+                          onClick={() => removeItem(personIndex)}
+                        >
+                          <FaMinusCircle />
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="flex space-x-2 p-2">
+                      {Array.from({ length: targetPerson }, (_, index) => (
+                        <div key={`payto_${index}`}>
+                          <div
+                            className={
+                              personIndex === index
+                                ? "text-gray-500"
+                                : "dark:text-white text-gray-800"
+                            }
+                          >
+                            <div className="text-small text-gray-200 ">
+                              <div
+                                className={`px-1 rounded-md ${
+                                  index > colorCode.length ||
+                                  personIndex === index
+                                    ? "bg-gray-200"
+                                    : colorCode[index]
+                                }`}
+                                key={`cal${index}`}
+                              >
+                                Pay{" "}
+                                <b className="text-white">
+                                  ${calculateEachPay(personIndex, index)}
+                                </b>{" "}
+                                to
+                                {` `}
+                                {persons[index]?.name || index + 1}
+                              </div>
+                            </div>
+                          </div>
+                          <Spacer x={4} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </Card>
+              </div>
+            ))}
+          </form>
         </div>
       </main>
     </>
