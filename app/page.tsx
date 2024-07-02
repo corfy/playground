@@ -1,16 +1,11 @@
 "use client";
-import { useState, ChangeEvent, FormEvent, useRef } from "react";
-import { Button } from "@nextui-org/button";
-import { Input, Checkbox, Spacer, Card } from "@nextui-org/react";
+import { useState, ChangeEvent, FormEvent } from "react";
+import { Button, Input, Checkbox, Spacer, Card } from "@nextui-org/react";
 import { FaPlusCircle, FaMinusCircle, FaLemon } from "react-icons/fa";
-import {
-  BsBrightnessHighFill,
-  BsBrightnessAltHighFill,
-  BsPersonSlash,
-} from "react-icons/bs";
+import { BsBrightnessHighFill, BsBrightnessAltHighFill } from "react-icons/bs";
 
 type RepProperties = {
-  [key: string]: number | string; // added index signature
+  [key: string]: number | string;
 };
 
 interface Item {
@@ -33,25 +28,30 @@ export default function Home() {
   const invPre = "inv";
 
   const handlePersonNameChange = (index: number, value: string) => {
-    const newPersons = [...persons];
-    newPersons[index].name = value;
-    setPersons(newPersons);
+    setPersons(prevPersons => {
+      const newPersons = [...prevPersons];
+      newPersons[index].name = value;
+      return newPersons;
+    });
   };
 
   const handleHideChange = (index: number) => {
-    const newPersons = [...persons];
-    newPersons[index].hide = !newPersons[index].hide;
-    setPersons(newPersons);
+    setPersons(prevPersons => {
+      const newPersons = [...prevPersons];
+      newPersons[index].hide = !newPersons[index].hide;
+      return newPersons;
+    });
   };
 
   const toggleItemVisibility = () => {
-    setVisibility((prevVisibility) => {
+    setVisibility(prevVisibility => {
       const newVisibility = !prevVisibility;
-      const newPersons: Person[] = persons.map((person) => ({
-        ...person,
-        hide: newVisibility,
-      }));
-      setPersons(newPersons);
+      setPersons(prevPersons =>
+        prevPersons.map(person => ({
+          ...person,
+          hide: newVisibility,
+        }))
+      );
       return newVisibility;
     });
   };
@@ -62,23 +62,22 @@ export default function Home() {
     field: "name" | "price",
     value: string | number
   ) => {
-    const newPersons = [...persons];
-    if (field === "price") {
-      newPersons[personIndex].items[itemIndex][field] = Number(value);
-      let amdInvs = [...newPersons[personIndex].items[itemIndex]?.Invs];
-      //update individual price
-      const totalInv = amdInvs.filter(
-        (inv, ind) => inv[`${invPre}${ind}`] != 0
-      );
-      newPersons[personIndex].items[itemIndex].Invs = handlePrice(
-        Number(value),
-        totalInv.length,
-        amdInvs
-      );
-    } else {
-      newPersons[personIndex].items[itemIndex][field] = value as string;
-    }
-    setPersons(newPersons);
+    setPersons(prevPersons => {
+      const newPersons = [...prevPersons];
+      if (field === "price") {
+        newPersons[personIndex].items[itemIndex][field] = Number(value);
+        let amdInvs = [...newPersons[personIndex].items[itemIndex]?.Invs];
+        const totalInv = amdInvs.filter((inv, ind) => inv[`${invPre}${ind}`] != 0);
+        newPersons[personIndex].items[itemIndex].Invs = handlePrice(
+          Number(value),
+          totalInv.length,
+          amdInvs
+        );
+      } else {
+        newPersons[personIndex].items[itemIndex][field] = value as string;
+      }
+      return newPersons;
+    });
   };
 
   const handleCheckboxChange = (
@@ -87,46 +86,31 @@ export default function Home() {
     newvalue: number,
     invIndex: number
   ) => {
-    const amdPersons = [...persons];
-    let amdInvs = [...amdPersons[personIndex].items[itemIndex]?.Invs];
-    // Total involve other than this checkbox
-    const totalInv = amdInvs.filter(
-      (inv, ind) => ind != invIndex && inv[`${invPre}${ind}`] != 0
-    );
-    let invCount = totalInv.length;
-    if (Number(newvalue) == 1) {
-      invCount++;
-    }
-    const newprice =
-      amdPersons[personIndex].items[itemIndex].price != 0
-        ? amdPersons[personIndex].items[itemIndex].price / invCount
-        : 0;
-    if (newprice == 0) {
-      const inv = `${invPre}${invIndex}`;
-      amdInvs[invIndex] = {
-        [inv]: Number(newvalue) == 1 ? Number(newvalue) + 0.111 : 0,
-      };
-      amdPersons[personIndex].items[itemIndex].Invs = amdInvs;
-    } else {
-      const newInvs: RepProperties[] = amdInvs.map((n, i) => {
-        const inv = `${invPre}${i}`;
+    setPersons(prevPersons => {
+      const newPersons = [...prevPersons];
+      let amdInvs = [...newPersons[personIndex].items[itemIndex]?.Invs];
+      const totalInv = amdInvs.filter((inv, ind) => ind != invIndex && inv[`${invPre}${ind}`] != 0);
+      let invCount = totalInv.length;
+      if (newvalue === 1) invCount++;
+      const newprice = newPersons[personIndex].items[itemIndex].price != 0 ? newPersons[personIndex].items[itemIndex].price / invCount : 0;
 
-        if (Number(newvalue) == 0) {
-          if (i == invIndex) n = { [inv]: 0 };
-          else if (n[inv] != 0 && n[inv] != 0.111)
-            n = { [inv]: newprice.toFixed(2) };
-        } else {
-          n = { [inv]: newprice.toFixed(2) };
-        }
-
-        return n;
-      });
-      amdInvs = newInvs;
-    }
-
-    amdPersons[personIndex].items[itemIndex].Invs = amdInvs;
-
-    setPersons(amdPersons);
+      if (newprice === 0) {
+        amdInvs[invIndex] = { [`${invPre}${invIndex}`]: newvalue === 1 ? newvalue + 0.111 : 0 };
+      } else {
+        amdInvs = amdInvs.map((n, i) => {
+          const inv = `${invPre}${i}`;
+          if (newvalue === 0) {
+            if (i === invIndex) return { [inv]: 0 };
+            else if (n[inv] !== 0 && n[inv] !== 0.111) return { [inv]: newprice.toFixed(2) };
+          } else {
+            return { [inv]: newprice.toFixed(2) };
+          }
+          return n;
+        });
+      }
+      newPersons[personIndex].items[itemIndex].Invs = amdInvs;
+      return newPersons;
+    });
   };
 
   const handlePrice = (
@@ -134,62 +118,52 @@ export default function Home() {
     invCount: number,
     amdInvs: RepProperties[]
   ) => {
-    const newprice = value != 0 ? value / invCount : 0;
-    if (newprice != 0) {
-      const newInvs: RepProperties[] = amdInvs.map((n, i) => {
+    const newprice = value !== 0 ? value / invCount : 0;
+    if (newprice !== 0) {
+      amdInvs = amdInvs.map((n, i) => {
         const inv = `${invPre}${i}`;
-        if (n[inv] != 0) return { [inv]: newprice.toFixed(2) };
+        if (n[inv] !== 0) return { [inv]: newprice.toFixed(2) };
         else return { [inv]: 0 };
       });
-      amdInvs = newInvs;
     }
-    console.log(newprice, invCount);
     return amdInvs;
   };
 
   const addPerson = () => {
     if (targetPerson > 0) {
-      const newPersons = [];
-      for (let i = 0; i < targetPerson; i++) {
-        newPersons.push({ name: "", hide: false, items: [getSub()] });
-      }
-      //console.log(newPersons);
+      const newPersons = Array.from({ length: targetPerson }, () => ({
+        name: "",
+        hide: false,
+        items: [getSub()],
+      }));
       setPersons(newPersons);
-      //setPersons([...persons, { name: '', items: [{ name: '', price: 0 }] }]);
     }
   };
 
-  const getSub = () => {
+  const getSub = (): Item => {
     const newSub: Item = { name: "", price: 0, Invs: [] };
     for (let i = 0; i < targetPerson; i++) {
-      const inv = `${invPre}${i}`;
-      const field = inv as keyof RepProperties;
-      if (newSub.Invs) {
-        // check if Invs is not undefined
-        newSub.Invs.push({ [field]: 1.111 });
-      }
+      newSub.Invs.push({ [`${invPre}${i}`]: 1.111 });
     }
     return newSub;
   };
 
-  //const removePerson = () => {
-  //if (persons.length > 0) {
-  //setPersons(persons.slice(0, -1));
-  //}
-  //};
-
   const addItem = (personIndex: number) => {
-    const newPersons = [...persons];
-    newPersons[personIndex].items.push(getSub());
-    setPersons(newPersons);
+    setPersons(prevPersons => {
+      const newPersons = [...prevPersons];
+      newPersons[personIndex].items.push(getSub());
+      return newPersons;
+    });
   };
 
   const removeItem = (personIndex: number) => {
-    const newPersons = [...persons];
-    if (newPersons[personIndex].items.length > 1) {
-      newPersons[personIndex].items.pop();
-    }
-    setPersons(newPersons);
+    setPersons(prevPersons => {
+      const newPersons = [...prevPersons];
+      if (newPersons[personIndex].items.length > 1) {
+        newPersons[personIndex].items.pop();
+      }
+      return newPersons;
+    });
   };
 
   const calculateTotalPrice = (person: Person) => {
@@ -199,308 +173,212 @@ export default function Home() {
   const calculateEachPay = (curPerInd: number, curPayToInd: number) => {
     let sumup = 0;
     let curPerSum = 0;
-    if (curPerInd != curPayToInd) {
-      persons[curPerInd]?.items.filter((item) => {
-        const invKey = `inv${curPayToInd}`; // dynamically create the key
-        if (Number(item.Invs[curPayToInd]?.[invKey]) != 1.111)
-          curPerSum = curPerSum + Number(item.Invs[curPayToInd]?.[invKey] || 0);
+    if (curPerInd !== curPayToInd) {
+      persons[curPerInd]?.items.forEach((item) => {
+        const invKey = `inv${curPayToInd}`;
+        if (Number(item.Invs[curPayToInd]?.[invKey]) !== 1.111)
+          curPerSum += Number(item.Invs[curPayToInd]?.[invKey] || 0);
       });
-      persons[curPayToInd]?.items.filter((item) => {
-        const invKey = `inv${curPerInd}`; // dynamically create the key
-        if (Number(item.Invs[curPerInd]?.[invKey]) != 1.111)
-          sumup = sumup + Number(item.Invs[curPerInd]?.[invKey] || 0);
+      persons[curPayToInd]?.items.forEach((item) => {
+        const invKey = `inv${curPerInd}`;
+        if (Number(item.Invs[curPerInd]?.[invKey]) !== 1.111)
+          sumup += Number(item.Invs[curPerInd]?.[invKey] || 0);
       });
-
-      //console.log('cur per total: ' + curPerTotal + 'total price' + totalPrice);
-      const test = curPerSum < sumup ? sumup - curPerSum : 0;
-      return test.toFixed(2);
-    } else return sumup.toFixed(2);
+      return (curPerSum < sumup ? sumup - curPerSum : 0).toFixed(2);
+    } else {
+      return sumup.toFixed(2);
+    }
   };
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
-    // Optional: Handle form submission if needed
   };
 
   const colorCode = [
-    "bg-rose-400",
-    "bg-orange-900",
-    "bg-emerald-500",
-    "bg-slate-600",
-    "bg-cyan-500",
-    "bg-indigo-500",
-    "bg-orange-400",
-    "bg-amber-400",
-    "bg-sky-900",
-    "bg-amber-200",
-    "bg-teal-100",
-    "bg-blue-200",
-    "bg-fuchsia-300",
-    "bg-rose-200   ",
+    "bg-rose-400", "bg-orange-900", "bg-emerald-500", "bg-slate-600",
+    "bg-cyan-500", "bg-indigo-500", "bg-orange-400", "bg-amber-400",
+    "bg-sky-900", "bg-amber-200", "bg-teal-100", "bg-blue-200",
+    "bg-fuchsia-300", "bg-rose-200"
   ];
-  const btnstyle2 =
-    "font-bold m-1 inline-block rounded bg-neutral-800 px-2 py-1 text-xs font-medium uppercase leading-normal text-neutral-50 shadow-dark-3 transition duration-150 ease-in-out hover:bg-neutral-700 hover:shadow-dark-2 focus:bg-neutral-700 focus:shadow-dark-2 focus:outline-none focus:ring-0 active:bg-neutral-900 active:shadow-dark-2 motion-reduce:transition-none dark:shadow-black/30 dark:hover:shadow-dark-strong dark:focus:shadow-dark-strong dark:active:shadow-dark-strong";
   return (
-    <>
-      <main className="max-w-fit min-h-screen mx-auto px-6 py-12 overflow-y-auto relative">
-        <div style={{ fontFamily: "Exo 2, sans-serif" }}>
-          <h1 className="text-4xl font-bold dark:text-white py-2">
-            Expenses Calculator
-          </h1>
-          <div className="flex flex-row space-x-2 max-w-fit pb-2">
-            <Input
-              type="number"
-              size="sm"
-              value={targetPerson.toString()}
-              onChange={(e) => {
-                setTargetPerson(Number(e.target.value));
-                addPerson;
-              }}
-              placeholder="target person"
-              required
-            />
-            {persons.length == 0 ? (
-              <Button
-                fullWidth={true}
-                size="sm"
-                color="primary"
-                variant="flat"
-                type="button"
-                onClick={addPerson}
-              >
-                {persons.length > 0 ? "Update" : "Add"} Person Involve
-              </Button>
-            ) : (
-              <Button
-                fullWidth={true}
-                size="sm"
-                color="primary"
-                variant="flat"
-                type="button"
-                onClick={() => {
-                  setPersons([]);
-                  setTargetPerson(0);
-                }}
-              >
-                Start Over
-              </Button>
-            )}
-
-            <Button
-              fullWidth={true}
-              size="sm"
-              color="primary"
-              variant="bordered"
-              type="button"
-              onClick={toggleItemVisibility}
-            >
-              Toggle Items Visibility
-            </Button>
-          </div>
-          <form
-            onSubmit={handleSubmit}
-            className=" mx-auto grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2"
+    <main className="max-w-fit min-h-screen mx-auto px-6 py-12 overflow-y-auto relative">
+      <div className="font-exo">
+        <h1 className="text-4xl font-bold dark:text-white py-2">
+          Expenses Calculator
+        </h1>
+        <div className="flex flex-row space-x-2 max-w-fit pb-2">
+          <Input
+            type="number"
+            size="sm"
+            value={targetPerson.toString()}
+            onChange={(e) => {
+              setTargetPerson(Number(e.target.value));
+              addPerson();
+            }}
+            placeholder="target person"
+            required
+          />
+          <Button
+            fullWidth={true}
+            size="sm"
+            color="primary"
+            variant="flat"
+            type="button"
+            onClick={persons.length === 0 ? addPerson : () => { setPersons([]); setTargetPerson(0); }}
           >
-            {persons.map((person, personIndex) => (
-              <div key={`pi_${personIndex}`}>
-                <Card
-                  className={`flex mb-3 shadow-md rounded-md ${
-                    personIndex > colorCode.length
-                      ? "bg-white"
-                      : colorCode[personIndex]
-                  } p-1 border-y-gray-800 text-white`}
-                >
-                  <Input
-                    size="sm"
-                    className="text-black mt-1"
-                    type="text"
-                    value={person.name}
-                    onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                      handlePersonNameChange(personIndex, e.target.value)
-                    }
-                    placeholder="Person Name"
-                    endContent={
-                      <div className="pointer-events-none flex items-center">
-                        <span className="text-default-400 text-small">
-                          ${calculateTotalPrice(person)}
-                        </span>
-                      </div>
-                    }
-                    startContent={
-                      <div className="pointer-events-none flex items-center">
-                        <span className="text-default-400 text-small">
-                          {personIndex + 1}.
-                        </span>
-                      </div>
-                    }
-                    required
-                  />
-
-                  <div className="mx-1 mb-1 rounded-b-md dark:bg-black bg-white  overflow-y-auto">
-                    <Button
-                      size="sm"
-                      className="text-xl text-amber-500 absolute top-8 right-1 shadow-lg"
-                      onClick={() => handleHideChange(personIndex)}
-                      color="warning"
-                      isIconOnly
-                      variant="flat"
-                      aria-label="Open"
-                    >
-                      {person.hide ? (
-                        <BsBrightnessHighFill className="motion-safe:animate-ping motion-reduce:transition duration-500" />
-                      ) : (
-                        <BsBrightnessAltHighFill />
-                      )}
-                    </Button>
-                    <div
-                      className={`transition-height ${
-                        person.hide ? "hidden" : ""
-                      }`}
-                    >
-                      {person.items.map((item, itemIndex) => (
-                        <div key={`it_${itemIndex}`} className="my-1">
-                          <div className="flex space-x-1 px-2">
-                            <Input
-                              label="Item Name"
-                              labelPlacement="outside"
-                              size="sm"
-                              type="text"
-                              value={item.name}
-                              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                                handleItemChange(
-                                  personIndex,
-                                  itemIndex,
-                                  "name",
-                                  e.target.value
-                                )
-                              }
-                              placeholder="Item name"
-                              required
-                            />
-                            <Input
-                              label="Price"
-                              type="number"
-                              required
-                              placeholder="0.00"
-                              labelPlacement="outside"
-                              value={item.price.toString()}
-                              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                                handleItemChange(
-                                  personIndex,
-                                  itemIndex,
-                                  "price",
-                                  e.target.value
-                                )
-                              }
-                              size="sm"
-                              startContent={
-                                <div className="pointer-events-none flex items-center">
-                                  <span className="text-default-400 text-small">
-                                    $
-                                  </span>
-                                </div>
-                              }
-                            />
-                          </div>
-                          <div className="flex space-x-2 px-2">
-                            {item.Invs?.map((inv, invIndex) => (
-                              <div key={`inv${invIndex}`}>
-                                <Checkbox
-                                  id={`${invPre}${invIndex}`}
-                                  type="checkbox"
-                                  size="sm"
-                                  color="warning"
-                                  icon={<FaLemon />}
-                                  defaultSelected={
-                                    Number(inv[`${invPre}${invIndex}`]) > 0
-                                  }
-                                  isSelected={
-                                    Number(inv[`${invPre}${invIndex}`]) > 0
-                                  }
-                                  onChange={(
-                                    e: ChangeEvent<HTMLInputElement>
-                                  ) =>
-                                    handleCheckboxChange(
-                                      personIndex,
-                                      itemIndex,
-                                      Number(inv[`${invPre}${invIndex}`]) > 0
-                                        ? 0
-                                        : 1,
-                                      invIndex
-                                    )
-                                  }
-                                >
-                                  {persons[invIndex].name || invIndex + 1}
-                                </Checkbox>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      ))}
-
-                      <div className="mx-2  space-x-1">
-                        <Button
-                          isIconOnly
-                          size="sm"
-                          color="primary"
-                          aria-label="Add Item"
-                          onClick={() => addItem(personIndex)}
-                        >
-                          <FaPlusCircle />
-                        </Button>
-                        <Button
-                          isIconOnly
-                          color="danger"
-                          size="sm"
-                          variant="bordered"
-                          aria-label="Remove Item"
-                          onClick={() => removeItem(personIndex)}
-                        >
-                          <FaMinusCircle />
-                        </Button>
-                      </div>
+            {persons.length > 0 ? "Start Over" : "Add Person Involve"}
+          </Button>
+          <Button
+            fullWidth={true}
+            size="sm"
+            color="primary"
+            variant="bordered"
+            type="button"
+            onClick={toggleItemVisibility}
+          >
+            Toggle Items Visibility
+          </Button>
+        </div>
+        <form onSubmit={handleSubmit} className="mx-auto grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2">
+          {persons.map((person, personIndex) => (
+            <div key={`pi_${personIndex}`}>
+              <Card className={`flex mb-3 shadow-md rounded-md ${personIndex > colorCode.length ? "bg-white" : colorCode[personIndex]} p-1 border-y-gray-800 text-white`}>
+                <Input
+                  size="sm"
+                  className="text-black mt-1"
+                  type="text"
+                  value={person.name}
+                  onChange={(e) => handlePersonNameChange(personIndex, e.target.value)}
+                  placeholder="Person Name"
+                  endContent={
+                    <div className="pointer-events-none flex items-center">
+                      <span className="text-default-400 text-small">
+                        ${calculateTotalPrice(person)}
+                      </span>
                     </div>
-                    <div className="flex space-x-2 p-2">
-                      {Array.from({ length: targetPerson }, (_, index) => (
-                        <div key={`payto_${index}`}>
-                          <div
-                            className={
-                              personIndex === index
-                                ? "text-gray-500"
-                                : "dark:text-white text-gray-800"
-                            }
-                          >
-                            <div className="text-small text-gray-200 ">
-                              <div
-                                className={`px-1 rounded-md ${
-                                  index > colorCode.length ||
-                                  personIndex === index
-                                    ? "bg-gray-200"
-                                    : colorCode[index]
-                                }`}
-                                key={`cal${index}`}
-                              >
-                                Pay{" "}
-                                <b className="text-white">
-                                  ${calculateEachPay(personIndex, index)}
-                                </b>{" "}
-                                to
-                                {` `}
-                                {persons[index]?.name || index + 1}
+                  }
+                  startContent={
+                    <div className="pointer-events-none flex items-center">
+                      <span className="text-default-400 text-small">
+                        {personIndex + 1}.
+                      </span>
+                    </div>
+                  }
+                  required
+                />
+  
+                <div className="mx-1 mb-1 rounded-b-md dark:bg-black bg-white overflow-y-auto">
+                  <Button
+                    size="sm"
+                    className="text-xl text-amber-500 absolute top-8 right-1 shadow-lg"
+                    onClick={() => handleHideChange(personIndex)}
+                    color="warning"
+                    isIconOnly
+                    variant="flat"
+                    aria-label="Open"
+                  >
+                    {person.hide ? (
+                      <BsBrightnessHighFill className="motion-safe:animate-ping motion-reduce:transition duration-500" />
+                    ) : (
+                      <BsBrightnessAltHighFill />
+                    )}
+                  </Button>
+                  <div className={`transition-height ${person.hide ? "hidden" : ""}`}>
+                    {person.items.map((item, itemIndex) => (
+                      <div key={`it_${itemIndex}`} className="my-1">
+                        <div className="flex space-x-1 px-2">
+                          <Input
+                            label="Item Name"
+                            labelPlacement="outside"
+                            size="sm"
+                            type="text"
+                            value={item.name}
+                            onChange={(e) => handleItemChange(personIndex, itemIndex, "name", e.target.value)}
+                            placeholder="Item name"
+                            required
+                          />
+                          <Input
+                            label="Price"
+                            type="number"
+                            required
+                            placeholder="0.00"
+                            labelPlacement="outside"
+                            value={item.price.toString()}
+                            onChange={(e) => handleItemChange(personIndex, itemIndex, "price", e.target.value)}
+                            size="sm"
+                            startContent={
+                              <div className="pointer-events-none flex items-center">
+                                <span className="text-default-400 text-small">
+                                  $
+                                </span>
                               </div>
-                            </div>
-                          </div>
-                          <Spacer x={4} />
+                            }
+                          />
                         </div>
-                      ))}
+                        <div className="flex space-x-2 px-2">
+                          {item.Invs?.map((inv, invIndex) => (
+                            <div key={`inv${invIndex}`}>
+                              <Checkbox
+                                id={`${invPre}${invIndex}`}
+                                type="checkbox"
+                                size="sm"
+                                color="warning"
+                                icon={<FaLemon />}
+                                defaultSelected={Number(inv[`${invPre}${invIndex}`]) > 0}
+                                isSelected={Number(inv[`${invPre}${invIndex}`]) > 0}
+                                onChange={(e) => handleCheckboxChange(personIndex, itemIndex, Number(inv[`${invPre}${invIndex}`]) > 0 ? 0 : 1, invIndex)}
+                              >
+                                {persons[invIndex]?.name || invIndex + 1}
+                              </Checkbox>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+  
+                    <div className="mx-2 space-x-1">
+                      <Button
+                        isIconOnly
+                        size="sm"
+                        color="primary"
+                        aria-label="Add Item"
+                        onClick={() => addItem(personIndex)}
+                      >
+                        <FaPlusCircle />
+                      </Button>
+                      <Button
+                        isIconOnly
+                        color="danger"
+                        size="sm"
+                        variant="bordered"
+                        aria-label="Remove Item"
+                        onClick={() => removeItem(personIndex)}
+                      >
+                        <FaMinusCircle />
+                      </Button>
                     </div>
                   </div>
-                </Card>
-              </div>
-            ))}
-          </form>
-        </div>
-      </main>
-    </>
+                  <div className="flex space-x-2 p-2">
+                    {Array.from({ length: targetPerson }, (_, index) => (
+                      <div key={`payto_${index}`}>
+                        <div className={personIndex === index ? "text-gray-500" : "dark:text-white text-gray-800"}>
+                          <div className="text-small text-gray-200">
+                            <div className={`px-1 rounded-md ${index > colorCode.length || personIndex === index ? "bg-gray-200" : colorCode[index]}`} key={`cal${index}`}>
+                              Pay <b className="text-white">${calculateEachPay(personIndex, index)}</b> to {persons[index]?.name || index + 1}
+                            </div>
+                          </div>
+                        </div>
+                        <Spacer x={4} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </Card>
+            </div>
+          ))}
+        </form>
+      </div>
+    </main>
   );
+  
 }
